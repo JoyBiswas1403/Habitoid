@@ -1,0 +1,136 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --radius: 0.5rem;
+  /* Light mode colors - Modern purple and blue palette */
+  --background: hsl(240, 10%, 98%);
+  --foreground: hsl(240, 15%, 9%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(240, 15%, 9%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(240, 15%, 9%);
+  --primary: hsl(262, 83%, 58%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(240, 4.8%, 95.9%);
+  --secondary-foreground: hsl(240, 5.9%, 10%);
+  --muted: hsl(240, 4.8%, 95.9%);
+  --muted-foreground: hsl(240, 3.8%, 46.1%);
+  --accent: hsl(217, 91%, 60%);
+  --accent-foreground: hsl(0, 0%, 100%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --border: hsl(240, 5.9%, 90%);
+  --input: hsl(240, 5.9%, 90%);
+  --ring: hsl(262, 83%, 58%);
+  --success: hsl(142, 76%, 36%);
+  --warning: hsl(32, 95%, 44%);
+  --chart-1: hsl(262, 83%, 58%);
+  --chart-2: hsl(217, 91%, 60%);
+  --chart-3: hsl(173, 58%, 39%);
+  --chart-4: hsl(43, 74%, 66%);
+  --chart-5: hsl(27, 87%, 67%);
+  --font-sans: 'Inter', sans-serif;
+}
+
+.dark {
+  --background: hsl(240, 10%, 3.9%);
+  --foreground: hsl(0, 0%, 98%);
+  --card: hsl(240, 10%, 3.9%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --popover: hsl(240, 10%, 3.9%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --primary: hsl(263, 70%, 50.4%);
+  --primary-foreground: hsl(0, 0%, 98%);
+  --secondary: hsl(240, 3.7%, 15.9%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 3.7%, 15.9%);
+  --muted-foreground: hsl(240, 5%, 64.9%);
+  --accent: hsl(217, 91%, 60%);
+  --accent-foreground: hsl(240, 10%, 3.9%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 3.7%, 15.9%);
+  --input: hsl(240, 3.7%, 15.9%);
+  --ring: hsl(263, 70%, 50.4%);
+  --success: hsl(142, 70%, 45%);
+  --warning: hsl(32, 95%, 44%);
+  --chart-1: hsl(263, 70%, 50.4%);
+  --chart-2: hsl(217, 91%, 60%);
+  --chart-3: hsl(173, 58%, 39%);
+  --chart-4: hsl(43, 74%, 66%);
+  --chart-5: hsl(27, 87%, 67%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+}
+
+/* Custom styles for contribution squares */
+.contribution-square {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  transition: all 0.2s ease;
+}
+
+.contribution-square:hover {
+  transform: scale(1.2);
+}
+
+.level-0 { 
+  background-color: hsl(240, 4.8%, 95.9%); 
+}
+.level-1 { 
+  background-color: hsl(262, 83%, 90%); 
+}
+.level-2 { 
+  background-color: hsl(262, 83%, 75%); 
+}
+.level-3 { 
+  background-color: hsl(262, 83%, 58%); 
+}
+.level-4 { 
+  background-color: hsl(262, 83%, 45%); 
+}
+
+.dark .level-0 { 
+  background-color: hsl(240, 3.7%, 15.9%); 
+}
+.dark .level-1 { 
+  background-color: hsl(263, 70%, 25%); 
+}
+.dark .level-2 { 
+  background-color: hsl(263, 70%, 35%); 
+}
+.dark .level-3 { 
+  background-color: hsl(263, 70%, 45%); 
+}
+.dark .level-4 { 
+  background-color: hsl(263, 70%, 55%); 
+}
+
+.timer-display {
+  font-variant-numeric: tabular-nums;
+}
+
+.badge-glow {
+  box-shadow: 0 0 20px hsl(var(--accent) / 0.3);
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.timer-active {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
