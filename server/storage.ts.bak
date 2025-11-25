@@ -19,39 +19,38 @@ import {
   type AIInsight,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, gte, lte, desc, sql } from "drizzle-orm";
+import { eq, and, gte, lte, desc, sql, count } from "drizzle-orm";
 
 export interface IStorage {
-  // User operations
+  // User operations (mandatory for your-host Auth)
   getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
-
+  
   // Habit operations
   createHabit(habit: InsertHabit, userId: string): Promise<Habit>;
   getUserHabits(userId: string): Promise<Habit[]>;
   updateHabit(id: string, habit: Partial<InsertHabit>, userId: string): Promise<Habit | undefined>;
   deleteHabit(id: string, userId: string): Promise<boolean>;
-
+  
   // Habit log operations
   logHabit(log: InsertHabitLog, userId: string): Promise<HabitLog>;
   getHabitLogs(habitId: string, startDate: string, endDate: string): Promise<HabitLog[]>;
   getUserHabitLogs(userId: string, date: string): Promise<HabitLog[]>;
   getHabitLogsForContribution(userId: string, startDate: string, endDate: string): Promise<HabitLog[]>;
-
+  
   // Pomodoro operations
   createPomodoroSession(session: InsertPomodoroSession, userId: string): Promise<PomodoroSession>;
   getUserPomodoroSessions(userId: string, date: string): Promise<PomodoroSession[]>;
-
+  
   // Achievement operations
   getAchievements(): Promise<Achievement[]>;
   getUserAchievements(userId: string): Promise<UserAchievement[]>;
   unlockAchievement(userId: string, achievementId: string): Promise<UserAchievement>;
-
+  
   // AI Insights operations
   getWeeklyInsight(userId: string, weekStart: string): Promise<AIInsight | undefined>;
   saveWeeklyInsight(userId: string, weekStart: string, insights: string, recommendations: string, motivationalTip: string): Promise<AIInsight>;
-
+  
   // Leaderboard operations
   getLeaderboard(): Promise<User[]>;
   updateUserStats(userId: string, points: number, currentStreak: number, longestStreak: number): Promise<void>;
@@ -61,11 +60,6 @@ export class DatabaseStorage implements IStorage {
   // User operations
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user;
-  }
-
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
     return user;
   }
 
@@ -111,12 +105,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteHabit(id: string, userId: string): Promise<boolean> {
-    const [updated] = await db
+    const result = await db
       .update(habits)
       .set({ isActive: false, updatedAt: new Date() })
-      .where(and(eq(habits.id, id), eq(habits.userId, userId)))
-      .returning();
-    return !!updated;
+      .where(and(eq(habits.id, id), eq(habits.userId, userId)));
+    return result.rowCount > 0;
   }
 
   // Habit log operations
@@ -164,8 +157,7 @@ export class DatabaseStorage implements IStorage {
           gte(habitLogs.date, startDate),
           lte(habitLogs.date, endDate)
         )
-      )
-      .orderBy(desc(habitLogs.date));
+      );
   }
 
   // Pomodoro operations

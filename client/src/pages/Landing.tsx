@@ -16,8 +16,8 @@ export default function Landing() {
                   <span className="block text-primary xl:inline">HabitFlow</span>
                 </h1>
                 <p className="mt-3 text-base text-muted-foreground sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
-                  Transform your daily routines into powerful habits with AI-powered insights, 
-                  gamification, and advanced tracking features. Join thousands of users building 
+                  Transform your daily routines into powerful habits with AI-powered insights,
+                  gamification, and advanced tracking features. Join thousands of users building
                   better lives one habit at a time.
                 </p>
                 <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
@@ -25,7 +25,7 @@ export default function Landing() {
                     <Button
                       size="lg"
                       className="w-full sm:w-auto"
-                      onClick={() => window.location.href = "/api/login"}
+                      onClick={() => window.location.href = "/auth"}
                       data-testid="button-login"
                     >
                       Get Started Free
@@ -170,7 +170,7 @@ export default function Landing() {
           <Button
             size="lg"
             className="mt-8"
-            onClick={() => window.location.href = "/api/login"}
+            onClick={() => window.location.href = "/auth"}
             data-testid="button-signup"
           >
             Sign Up Free

@@ -1,0 +1,820 @@
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HabitFlow - Advanced Productivity Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    borderRadius: {
+                        lg: "var(--radius)",
+                        md: "calc(var(--radius) - 2px)",
+                        sm: "calc(var(--radius) - 4px)",
+                    },
+                    colors: {
+                        background: "var(--background)",
+                        foreground: "var(--foreground)",
+                        card: {
+                            DEFAULT: "var(--card)",
+                            foreground: "var(--card-foreground)",
+                        },
+                        popover: {
+                            DEFAULT: "var(--popover)",
+                            foreground: "var(--popover-foreground)",
+                        },
+                        primary: {
+                            DEFAULT: "var(--primary)",
+                            foreground: "var(--primary-foreground)",
+                        },
+                        secondary: {
+                            DEFAULT: "var(--secondary)",
+                            foreground: "var(--secondary-foreground)",
+                        },
+                        muted: {
+                            DEFAULT: "var(--muted)",
+                            foreground: "var(--muted-foreground)",
+                        },
+                        accent: {
+                            DEFAULT: "var(--accent)",
+                            foreground: "var(--accent-foreground)",
+                        },
+                        destructive: {
+                            DEFAULT: "var(--destructive)",
+                            foreground: "var(--destructive-foreground)",
+                        },
+                        border: "var(--border)",
+                        input: "var(--input)",
+                        ring: "var(--ring)",
+                        success: "var(--success)",
+                        warning: "var(--warning)",
+                        chart: {
+                            "1": "var(--chart-1)",
+                            "2": "var(--chart-2)",
+                            "3": "var(--chart-3)",
+                            "4": "var(--chart-4)",
+                            "5": "var(--chart-5)",
+                        }
+                    },
+                    fontFamily: {
+                        sans: ["Inter", "sans-serif"],
+                    }
+                },
+            }
+        };
+    </script>
+
+    <style>
+        :root {
+            --radius: 0.5rem;
+            /* Light mode colors */
+            --background: hsl(210 40% 98%);
+            --foreground: hsl(222.2 84% 4.9%);
+            --card: hsl(0 0% 100%);
+            --card-foreground: hsl(222.2 84% 4.9%);
+            --popover: hsl(0 0% 100%);
+            --popover-foreground: hsl(222.2 84% 4.9%);
+            --primary: hsl(158 64% 52%);
+            --primary-foreground: hsl(210 40% 98%);
+            --secondary: hsl(210 40% 96%);
+            --secondary-foreground: hsl(222.2 47.4% 11.2%);
+            --muted: hsl(210 40% 96%);
+            --muted-foreground: hsl(215.4 16.3% 46.9%);
+            --accent: hsl(43 96% 56%);
+            --accent-foreground: hsl(222.2 84% 4.9%);
+            --destructive: hsl(0 84.2% 60.2%);
+            --destructive-foreground: hsl(210 40% 98%);
+            --border: hsl(214.3 31.8% 91.4%);
+            --input: hsl(214.3 31.8% 91.4%);
+            --ring: hsl(158 64% 52%);
+            --success: hsl(142 76% 36%);
+            --warning: hsl(32 95% 44%);
+            --chart-1: hsl(158 64% 52%);
+            --chart-2: hsl(43 96% 56%);
+            --chart-3: hsl(197 92% 61%);
+            --chart-4: hsl(280 100% 70%);
+            --chart-5: hsl(14 91% 60%);
+        }
+
+        .dark {
+            --background: hsl(222.2 84% 4.9%);
+            --foreground: hsl(210 40% 98%);
+            --card: hsl(222.2 78% 8%);
+            --card-foreground: hsl(210 40% 98%);
+            --popover: hsl(222.2 78% 8%);
+            --popover-foreground: hsl(210 40% 98%);
+            --primary: hsl(158 64% 52%);
+            --primary-foreground: hsl(222.2 84% 4.9%);
+            --secondary: hsl(217.2 32.6% 17.5%);
+            --secondary-foreground: hsl(210 40% 98%);
+            --muted: hsl(217.2 32.6% 17.5%);
+            --muted-foreground: hsl(215 20.2% 65.1%);
+            --accent: hsl(43 96% 56%);
+            --accent-foreground: hsl(222.2 84% 4.9%);
+            --destructive: hsl(0 62.8% 30.6%);
+            --destructive-foreground: hsl(210 40% 98%);
+            --border: hsl(217.2 32.6% 17.5%);
+            --input: hsl(217.2 32.6% 17.5%);
+            --ring: hsl(158 64% 52%);
+            --success: hsl(142 70% 45%);
+            --warning: hsl(32 95% 44%);
+            --chart-1: hsl(158 64% 52%);
+            --chart-2: hsl(43 96% 56%);
+            --chart-3: hsl(197 92% 61%);
+            --chart-4: hsl(280 100% 70%);
+            --chart-5: hsl(14 91% 60%);
+        }
+
+        .contribution-square {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+            transition: all 0.2s ease;
+        }
+
+        .contribution-square:hover {
+            transform: scale(1.2);
+        }
+
+        .level-0 { background-color: hsl(210 40% 96%); }
+        .level-1 { background-color: hsl(158 64% 92%); }
+        .level-2 { background-color: hsl(158 64% 72%); }
+        .level-3 { background-color: hsl(158 64% 52%); }
+        .level-4 { background-color: hsl(158 64% 32%); }
+
+        .dark .level-0 { background-color: hsl(217.2 32.6% 17.5%); }
+        .dark .level-1 { background-color: hsl(158 64% 25%); }
+        .dark .level-2 { background-color: hsl(158 64% 35%); }
+        .dark .level-3 { background-color: hsl(158 64% 45%); }
+        .dark .level-4 { background-color: hsl(158 64% 55%); }
+
+        .timer-display {
+            font-variant-numeric: tabular-nums;
+        }
+
+        .badge-glow {
+            box-shadow: 0 0 20px hsl(var(--accent) / 0.3);
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .timer-active {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+    </style>
+</head>
+
+<body class="h-full bg-background text-foreground font-sans">
+    <!-- @COMPONENT: App [main application wrapper] -->
+    <div class="h-full flex">
+        <!-- @COMPONENT: Sidebar [navigation menu] -->
+        <div class="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0">
+            <div class="flex flex-col flex-grow pt-5 bg-card border-r border-border overflow-y-auto">
+                <div class="flex items-center flex-shrink-0 px-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                            <i class="fas fa-chart-line text-primary-foreground text-lg"></i>
+                        </div>
+                        <h1 class="text-xl font-bold text-foreground">HabitFlow</h1>
+                    </div>
+                </div>
+                
+                <div class="mt-8 flex-grow flex flex-col">
+                    <nav class="flex-1 px-2 space-y-1">
+                        <a href="#dashboard" class="bg-primary text-primary-foreground group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                            <i class="fas fa-home mr-3"></i>
+                            Dashboard
+                        </a>
+                        <a href="#habits" class="text-muted-foreground hover:bg-muted hover:text-foreground group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                            <i class="fas fa-tasks mr-3"></i>
+                            My Habits
+                        </a>
+                        <a href="#timer" class="text-muted-foreground hover:bg-muted hover:text-foreground group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                            <i class="fas fa-clock mr-3"></i>
+                            Pomodoro Timer
+                        </a>
+                        <a href="#calendar" class="text-muted-foreground hover:bg-muted hover:text-foreground group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                            <i class="fas fa-calendar mr-3"></i>
+                            Calendar
+                        </a>
+                        <a href="#insights" class="text-muted-foreground hover:bg-muted hover:text-foreground group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                            <i class="fas fa-brain mr-3"></i>
+                            AI Insights
+                        </a>
+                        <a href="#leaderboard" class="text-muted-foreground hover:bg-muted hover:text-foreground group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                            <i class="fas fa-trophy mr-3"></i>
+                            Leaderboard
+                        </a>
+                    </nav>
+                    
+                    <div class="flex-shrink-0 px-2 pb-4">
+                        <div class="bg-muted rounded-lg p-4 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium text-muted-foreground">Level 12</span>
+                                <span class="text-sm font-bold text-accent">2,450 XP</span>
+                            </div>
+                            <div class="w-full bg-border rounded-full h-2">
+                                <div class="bg-accent h-2 rounded-full" style="width: 65%"></div>
+                            </div>
+                            <p class="text-xs text-muted-foreground">550 XP to Level 13</p>
+                        </div>
+                        
+                        <div class="mt-4 space-y-2">
+                            <button class="w-full text-muted-foreground hover:bg-muted hover:text-foreground group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                                <i class="fas fa-cog mr-3"></i>
+                                Settings
+                            </button>
+                            <button onclick="toggleDarkMode()" class="w-full text-muted-foreground hover:bg-muted hover:text-foreground group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                                <i class="fas fa-moon mr-3 dark:hidden"></i>
+                                <i class="fas fa-sun mr-3 hidden dark:inline"></i>
+                                <span class="dark:hidden">Dark Mode</span>
+                                <span class="hidden dark:inline">Light Mode</span>
+                            </button>
+                            <button class="w-full text-muted-foreground hover:bg-muted hover:text-foreground group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                                <i class="fas fa-sign-out-alt mr-3"></i>
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: Sidebar -->
+
+        <!-- @COMPONENT: MainContent [main application content area] -->
+        <div class="lg:pl-64 flex flex-col flex-1">
+            <!-- @COMPONENT: TopBar [header with user info and quick actions] -->
+            <div class="sticky top-0 z-10 flex-shrink-0 flex h-16 bg-card border-b border-border shadow-sm">
+                <div class="flex-1 px-4 flex justify-between items-center">
+                    <div class="flex items-center">
+                        <button class="lg:hidden p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted">
+                            <i class="fas fa-bars text-lg"></i>
+                        </button>
+                        <h2 class="ml-2 text-lg font-semibold text-foreground">Dashboard</h2>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <div class="hidden md:flex items-center space-x-3 bg-muted rounded-lg px-3 py-1">
+                            <span class="text-sm text-muted-foreground">Current Streak:</span>
+                            <span class="text-lg font-bold text-primary">23 days</span>
+                        </div>
+                        
+                        <button class="relative p-2 text-muted-foreground hover:text-foreground">
+                            <i class="fas fa-bell text-lg"></i>
+                            <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-accent"></span>
+                        </button>
+                        
+                        <div class="flex items-center space-x-3">
+                            <div class="hidden md:block text-right">
+                                <p class="text-sm font-medium text-foreground" data-bind="user.name">Alex Johnson</p>
+                                <p class="text-xs text-muted-foreground">Level 12 Achiever</p>
+                            </div>
+                            <div class="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
+                                <span class="text-sm font-medium text-primary-foreground">AJ</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: TopBar -->
+
+            <!-- @COMPONENT: DashboardContent [main dashboard view] -->
+            <main class="flex-1 overflow-y-auto">
+                <div class="py-6">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <!-- Stats Cards -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            <div class="bg-card rounded-lg shadow-sm border border-border p-6">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0">
+                                        <div class="w-8 h-8 bg-primary rounded-md flex items-center justify-center">
+                                            <i class="fas fa-fire text-primary-foreground text-sm"></i>
+                                        </div>
+                                    </div>
+                                    <div class="ml-5 w-0 flex-1">
+                                        <dl>
+                                            <dt class="text-sm font-medium text-muted-foreground truncate">Current Streak</dt>
+                                            <dd class="text-2xl font-bold text-foreground">23 days</dd>
+                                        </dl>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-card rounded-lg shadow-sm border border-border p-6">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0">
+                                        <div class="w-8 h-8 bg-accent rounded-md flex items-center justify-center">
+                                            <i class="fas fa-star text-accent-foreground text-sm"></i>
+                                        </div>
+                                    </div>
+                                    <div class="ml-5 w-0 flex-1">
+                                        <dl>
+                                            <dt class="text-sm font-medium text-muted-foreground truncate">Total Points</dt>
+                                            <dd class="text-2xl font-bold text-foreground">2,450</dd>
+                                        </dl>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-card rounded-lg shadow-sm border border-border p-6">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0">
+                                        <div class="w-8 h-8 bg-chart-3 rounded-md flex items-center justify-center">
+                                            <i class="fas fa-clock text-white text-sm"></i>
+                                        </div>
+                                    </div>
+                                    <div class="ml-5 w-0 flex-1">
+                                        <dl>
+                                            <dt class="text-sm font-medium text-muted-foreground truncate">Focus Time Today</dt>
+                                            <dd class="text-2xl font-bold text-foreground">3h 25m</dd>
+                                        </dl>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-card rounded-lg shadow-sm border border-border p-6">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0">
+                                        <div class="w-8 h-8 bg-chart-5 rounded-md flex items-center justify-center">
+                                            <i class="fas fa-percentage text-white text-sm"></i>
+                                        </div>
+                                    </div>
+                                    <div class="ml-5 w-0 flex-1">
+                                        <dl>
+                                            <dt class="text-sm font-medium text-muted-foreground truncate">Completion Rate</dt>
+                                            <dd class="text-2xl font-bold text-foreground">85%</dd>
+                                        </dl>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Main Content Grid -->
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <!-- Habit Tracker Card -->
+                            <div class="lg:col-span-2 bg-card rounded-lg shadow-sm border border-border p-6">
+                                <div class="flex items-center justify-between mb-6">
+                                    <h3 class="text-lg font-semibold text-foreground">Habit Activity</h3>
+                                    <div class="flex items-center space-x-2">
+                                        <select class="text-sm bg-input border border-border rounded-md px-3 py-1 text-foreground">
+                                            <option>Last 12 months</option>
+                                            <option>Last 6 months</option>
+                                            <option>Last 3 months</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <!-- GitHub-style contribution graph -->
+                                <div class="space-y-3">
+                                    <div class="flex justify-between text-xs text-muted-foreground">
+                                        <span>Jan</span>
+                                        <span>Feb</span>
+                                        <span>Mar</span>
+                                        <span>Apr</span>
+                                        <span>May</span>
+                                        <span>Jun</span>
+                                        <span>Jul</span>
+                                        <span>Aug</span>
+                                        <span>Sep</span>
+                                        <span>Oct</span>
+                                        <span>Nov</span>
+                                        <span>Dec</span>
+                                    </div>
+                                    
+                                    <!-- Contribution squares grid -->
+                                    <!-- @MAP: generateContributionSquares() -->
+                                    <div class="grid grid-cols-53 gap-1" id="contribution-grid">
+                                        <!-- Contribution squares will be generated here -->
+                                    </div>
+                                    <!-- @END_MAP -->
+                                    
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center space-x-2">
+                                            <span class="text-xs text-muted-foreground">Less</span>
+                                            <div class="flex space-x-1">
+                                                <div class="contribution-square level-0"></div>
+                                                <div class="contribution-square level-1"></div>
+                                                <div class="contribution-square level-2"></div>
+                                                <div class="contribution-square level-3"></div>
+                                                <div class="contribution-square level-4"></div>
+                                            </div>
+                                            <span class="text-xs text-muted-foreground">More</span>
+                                        </div>
+                                        <span class="text-xs text-muted-foreground">234 habits completed this year</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Pomodoro Timer Card -->
+                            <div class="bg-card rounded-lg shadow-sm border border-border p-6">
+                                <h3 class="text-lg font-semibold text-foreground mb-6">Pomodoro Timer</h3>
+                                
+                                <div class="text-center space-y-6">
+                                    <div class="relative inline-flex items-center justify-center">
+                                        <svg class="w-32 h-32 transform -rotate-90">
+                                            <circle cx="64" cy="64" r="56" stroke="hsl(var(--border))" stroke-width="8" fill="none" />
+                                            <circle cx="64" cy="64" r="56" stroke="hsl(var(--primary))" stroke-width="8" fill="none" 
+                                                    stroke-linecap="round" stroke-dasharray="351.86" stroke-dashoffset="87.97" />
+                                        </svg>
+                                        <div class="absolute inset-0 flex items-center justify-center">
+                                            <div class="text-center">
+                                                <div class="text-3xl font-bold timer-display text-foreground">25:00</div>
+                                                <div class="text-xs text-muted-foreground">Focus Session</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="space-y-3">
+                                        <button class="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-3 px-4 rounded-lg transition-colors" 
+                                                data-event="click:startTimer">
+                                            <i class="fas fa-play mr-2"></i>
+                                            Start Focus Session
+                                        </button>
+                                        
+                                        <div class="flex space-x-2">
+                                            <button class="flex-1 bg-secondary hover:bg-secondary/80 text-secondary-foreground py-2 px-3 rounded-md text-sm transition-colors">
+                                                <i class="fas fa-pause mr-1"></i>
+                                                Pause
+                                            </button>
+                                            <button class="flex-1 bg-secondary hover:bg-secondary/80 text-secondary-foreground py-2 px-3 rounded-md text-sm transition-colors">
+                                                <i class="fas fa-stop mr-1"></i>
+                                                Reset
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="bg-muted rounded-lg p-3">
+                                        <div class="text-sm text-muted-foreground mb-1">Today's Focus</div>
+                                        <div class="text-lg font-semibold text-foreground">6 sessions • 3h 25m</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Charts Section -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+                            <!-- Weekly Progress Chart -->
+                            <div class="bg-card rounded-lg shadow-sm border border-border p-6">
+                                <h3 class="text-lg font-semibold text-foreground mb-6">Weekly Progress</h3>
+                                <div class="h-64">
+                                    <canvas id="weeklyChart"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Habit Distribution Chart -->
+                            <div class="bg-card rounded-lg shadow-sm border border-border p-6">
+                                <h3 class="text-lg font-semibold text-foreground mb-6">Habit Categories</h3>
+                                <div class="h-64">
+                                    <canvas id="habitChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Today's Habits Section -->
+                        <div class="mt-8">
+                            <div class="bg-card rounded-lg shadow-sm border border-border p-6">
+                                <div class="flex items-center justify-between mb-6">
+                                    <h3 class="text-lg font-semibold text-foreground">Today's Habits</h3>
+                                    <button class="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                                            data-event="click:addHabit">
+                                        <i class="fas fa-plus mr-2"></i>
+                                        Add Habit
+                                    </button>
+                                </div>
+                                
+                                <div class="space-y-3">
+                                    <!-- @MAP: todayHabits.map(habit => ( -->
+                                    <div class="flex items-center justify-between p-4 bg-muted rounded-lg hover:bg-muted/80 transition-colors" data-mock="true">
+                                        <div class="flex items-center space-x-4">
+                                            <button class="w-6 h-6 rounded-full border-2 border-primary bg-primary flex items-center justify-center" 
+                                                    data-event="click:toggleHabit">
+                                                <i class="fas fa-check text-primary-foreground text-xs"></i>
+                                            </button>
+                                            <div>
+                                                <h4 class="font-medium text-foreground">Morning Meditation</h4>
+                                                <p class="text-sm text-muted-foreground">10 minutes daily • 23 day streak</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center space-x-3">
+                                            <span class="bg-success text-white px-2 py-1 rounded-full text-xs font-medium">
+                                                <i class="fas fa-fire mr-1"></i>23
+                                            </span>
+                                            <div class="flex space-x-1">
+                                                <button class="text-muted-foreground hover:text-foreground p-1">
+                                                    <i class="fas fa-edit text-sm"></i>
+                                                </button>
+                                                <button class="text-muted-foreground hover:text-destructive p-1">
+                                                    <i class="fas fa-trash text-sm"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center justify-between p-4 bg-muted rounded-lg hover:bg-muted/80 transition-colors" data-mock="true">
+                                        <div class="flex items-center space-x-4">
+                                            <button class="w-6 h-6 rounded-full border-2 border-border bg-background flex items-center justify-center" 
+                                                    data-event="click:toggleHabit">
+                                            </button>
+                                            <div>
+                                                <h4 class="font-medium text-foreground">Read for 30 minutes</h4>
+                                                <p class="text-sm text-muted-foreground">Daily reading • 12 day streak</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center space-x-3">
+                                            <span class="bg-warning text-white px-2 py-1 rounded-full text-xs font-medium">
+                                                <i class="fas fa-fire mr-1"></i>12
+                                            </span>
+                                            <div class="flex space-x-1">
+                                                <button class="text-muted-foreground hover:text-foreground p-1">
+                                                    <i class="fas fa-edit text-sm"></i>
+                                                </button>
+                                                <button class="text-muted-foreground hover:text-destructive p-1">
+                                                    <i class="fas fa-trash text-sm"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center justify-between p-4 bg-muted rounded-lg hover:bg-muted/80 transition-colors" data-mock="true">
+                                        <div class="flex items-center space-x-4">
+                                            <button class="w-6 h-6 rounded-full border-2 border-primary bg-primary flex items-center justify-center" 
+                                                    data-event="click:toggleHabit">
+                                                <i class="fas fa-check text-primary-foreground text-xs"></i>
+                                            </button>
+                                            <div>
+                                                <h4 class="font-medium text-foreground">Exercise</h4>
+                                                <p class="text-sm text-muted-foreground">30 minutes workout • 8 day streak</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center space-x-3">
+                                            <span class="bg-chart-3 text-white px-2 py-1 rounded-full text-xs font-medium">
+                                                <i class="fas fa-fire mr-1"></i>8
+                                            </span>
+                                            <div class="flex space-x-1">
+                                                <button class="text-muted-foreground hover:text-foreground p-1">
+                                                    <i class="fas fa-edit text-sm"></i>
+                                                </button>
+                                                <button class="text-muted-foreground hover:text-destructive p-1">
+                                                    <i class="fas fa-trash text-sm"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- @END_MAP )) -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Achievements -->
+                        <div class="mt-8">
+                            <div class="bg-card rounded-lg shadow-sm border border-border p-6">
+                                <h3 class="text-lg font-semibold text-foreground mb-6">Recent Achievements</h3>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <!-- @MAP: achievements.map(achievement => ( -->
+                                    <div class="flex items-center space-x-3 p-3 bg-muted rounded-lg badge-glow" data-mock="true">
+                                        <div class="w-10 h-10 bg-accent rounded-full flex items-center justify-center">
+                                            <i class="fas fa-medal text-accent-foreground"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-medium text-foreground">Consistency Master</h4>
+                                            <p class="text-sm text-muted-foreground">21-day streak achieved</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center space-x-3 p-3 bg-muted rounded-lg" data-mock="true">
+                                        <div class="w-10 h-10 bg-chart-4 rounded-full flex items-center justify-center">
+                                            <i class="fas fa-star text-white"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-medium text-foreground">Focus Champion</h4>
+                                            <p class="text-sm text-muted-foreground">50 Pomodoro sessions</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center space-x-3 p-3 bg-muted rounded-lg" data-mock="true">
+                                        <div class="w-10 h-10 bg-chart-5 rounded-full flex items-center justify-center">
+                                            <i class="fas fa-crown text-white"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-medium text-foreground">Habit Builder</h4>
+                                            <p class="text-sm text-muted-foreground">Created 10 habits</p>
+                                        </div>
+                                    </div>
+                                    <!-- @END_MAP )) -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            <!-- @END_COMPONENT: DashboardContent -->
+        </div>
+        <!-- @END_COMPONENT: MainContent -->
+    </div>
+    <!-- @END_COMPONENT: App -->
+
+    <!-- @COMPONENT: AddHabitModal [modal for creating new habits] -->
+    <div id="addHabitModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-background/80 backdrop-blur-sm transition-opacity"></div>
+            
+            <div class="inline-block align-bottom bg-card rounded-lg border border-border text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-card px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="w-full">
+                            <h3 class="text-lg leading-6 font-medium text-foreground mb-4">Create New Habit</h3>
+                            
+                            <form class="space-y-4">
+                                <div>
+                                    <label for="habitName" class="block text-sm font-medium text-foreground mb-1">Habit Name</label>
+                                    <input type="text" id="habitName" placeholder="e.g., Morning Meditation" 
+                                           class="w-full px-3 py-2 border border-border rounded-lg bg-input text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+                                </div>
+                                
+                                <div>
+                                    <label for="habitDescription" class="block text-sm font-medium text-foreground mb-1">Description</label>
+                                    <textarea id="habitDescription" rows="3" placeholder="Brief description of your habit..."
+                                              class="w-full px-3 py-2 border border-border rounded-lg bg-input text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"></textarea>
+                                </div>
+                                
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="habitCategory" class="block text-sm font-medium text-foreground mb-1">Category</label>
+                                        <select id="habitCategory" class="w-full px-3 py-2 border border-border rounded-lg bg-input text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+                                            <option>Health & Fitness</option>
+                                            <option>Productivity</option>
+                                            <option>Learning</option>
+                                            <option>Mindfulness</option>
+                                            <option>Social</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div>
+                                        <label for="habitFrequency" class="block text-sm font-medium text-foreground mb-1">Frequency</label>
+                                        <select id="habitFrequency" class="w-full px-3 py-2 border border-border rounded-lg bg-input text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+                                            <option>Daily</option>
+                                            <option>Weekly</option>
+                                            <option>Weekdays</option>
+                                            <option>Weekends</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-muted px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring sm:ml-3 sm:w-auto"
+                            data-event="click:createHabit">
+                        Create Habit
+                    </button>
+                    <button type="button" class="mt-3 w-full inline-flex justify-center rounded-lg border border-border shadow-sm px-4 py-2 bg-card text-foreground text-sm font-medium hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring sm:mt-0 sm:ml-3 sm:w-auto"
+                            onclick="closeModal('addHabitModal')">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: AddHabitModal -->
+
+    <script>
+        // Dark mode toggle
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+            localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
+        }
+
+        // Initialize dark mode from localStorage
+        (function() {
+            if (localStorage.getItem('darkMode') === 'true') {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+
+        // Generate contribution squares
+        function generateContributionSquares() {
+            const grid = document.getElementById('contribution-grid');
+            if (!grid) return;
+            
+            // Generate 365 squares (53 weeks * 7 days)
+            for (let i = 0; i < 371; i++) {
+                const square = document.createElement('div');
+                square.className = 'contribution-square';
+                
+                // Random level for demo (0-4)
+                const level = Math.floor(Math.random() * 5);
+                square.classList.add(`level-${level}`);
+                
+                // Add tooltip (would be dynamic in real app)
+                square.title = `${level} habits completed`;
+                
+                grid.appendChild(square);
+            }
+        }
+
+        // Initialize charts
+        function initializeCharts() {
+            // Weekly Progress Chart
+            const weeklyCtx = document.getElementById('weeklyChart');
+            if (weeklyCtx) {
+                new Chart(weeklyCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                        datasets: [{
+                            label: 'Habits Completed',
+                            data: [5, 7, 6, 8, 5, 4, 6],
+                            borderColor: 'hsl(158 64% 52%)',
+                            backgroundColor: 'hsl(158 64% 52% / 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'hsl(214.3 31.8% 91.4%)'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Habit Categories Chart
+            const habitCtx = document.getElementById('habitChart');
+            if (habitCtx) {
+                new Chart(habitCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Health', 'Productivity', 'Learning', 'Mindfulness'],
+                        datasets: [{
+                            data: [35, 25, 20, 20],
+                            backgroundColor: [
+                                'hsl(158 64% 52%)',
+                                'hsl(43 96% 56%)',
+                                'hsl(197 92% 61%)',
+                                'hsl(280 100% 70%)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Modal management
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            generateContributionSquares();
+            initializeCharts();
+            
+            // TODO: Implement real data fetching and state management
+            // TODO: Add real-time timer functionality
+            // TODO: Implement habit CRUD operations
+            // TODO: Add OpenAI API integration for insights
+            // TODO: Implement user authentication and session management
+        });
+    </script>
+</body>
+</html>

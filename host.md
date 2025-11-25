@@ -19,7 +19,7 @@ Preferred communication style: Simple, everyday language.
 ## Backend Architecture
 - **Runtime**: Node.js with Express.js framework
 - **Language**: TypeScript with ES modules
-- **Authentication**: Replit's OIDC-based authentication system with Passport.js
+- **Authentication**: your-host's OIDC-based authentication system with Passport.js
 - **Session Management**: express-session with PostgreSQL session store
 - **API Design**: RESTful endpoints with comprehensive error handling middleware
 
@@ -38,7 +38,7 @@ Preferred communication style: Simple, everyday language.
 - **AI Insights**: Weekly performance analysis and recommendations
 
 ## Authentication & Security
-- **Provider**: Replit OIDC integration for secure authentication
+- **Provider**: your-host OIDC integration for secure authentication
 - **Session Storage**: PostgreSQL-backed sessions with configurable TTL
 - **Authorization**: Route-level middleware protecting authenticated endpoints
 - **CSRF Protection**: Built-in session-based CSRF protection
@@ -55,7 +55,7 @@ Preferred communication style: Simple, everyday language.
 ## Third-party Services
 - **Neon Database**: Serverless PostgreSQL hosting for production data
 - **OpenAI API**: GPT-5 integration for generating personalized habit insights and recommendations
-- **Replit Authentication**: OIDC-based user authentication and profile management
+- **your-host Authentication**: OIDC-based user authentication and profile management
 
 ## Key Libraries
 - **Frontend**: React, Vite, TanStack Query, Wouter, React Hook Form, Zod, Tailwind CSS, shadcn/ui, Radix UI
@@ -66,4 +66,4 @@ Preferred communication style: Simple, everyday language.
 - **Build System**: Vite for frontend bundling, ESBuild for backend compilation
 - **Type Safety**: TypeScript throughout the stack with strict configuration
 - **Database Tools**: Drizzle Kit for migrations and schema management
-- **Development Server**: Hot module replacement and runtime error overlays for Replit environment
+- **Development Server**: Hot module replacement and runtime error overlays for your-host environment

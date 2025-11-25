@@ -1,7 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertHabitSchema, insertHabitLogSchema, insertPomodoroSessionSchema } from "@shared/schema";
 import { generateWeeklyInsights } from "./services/openai";
 import { generateWeeklyReport } from "./services/pdf";
@@ -9,12 +8,19 @@ import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
-  await setupAuth(app);
+  // await setupAuth(app); // Moved to index.ts
+
+  const isAuthenticated = (req: any, res: any, next: any) => {
+    if (req.isAuthenticated()) {
+      return next();
+    }
+    res.status(401).json({ message: "Unauthorized" });
+  };
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       res.json(user);
     } catch (error) {
@@ -26,7 +32,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Habit routes
   app.get('/api/habits', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const habits = await storage.getUserHabits(userId);
       res.json(habits);
     } catch (error) {
@@ -37,7 +43,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/habits', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const habitData = insertHabitSchema.parse(req.body);
       const habit = await storage.createHabit(habitData, userId);
       res.json(habit);
@@ -49,7 +55,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch('/api/habits/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const habitId = req.params.id;
       const habitData = insertHabitSchema.partial().parse(req.body);
       const habit = await storage.updateHabit(habitId, habitData, userId);
@@ -65,7 +71,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete('/api/habits/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const habitId = req.params.id;
       const success = await storage.deleteHabit(habitId, userId);
       if (!success) {
@@ -81,19 +87,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Habit log routes
   app.post('/api/habits/:id/log', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const habitId = req.params.id;
       const logData = insertHabitLogSchema.parse({ ...req.body, habitId });
       const log = await storage.logHabit(logData, userId);
-      
+
       // Update user stats after logging
       const user = await storage.getUser(userId);
       if (user && log.completed) {
-        const newPoints = user.totalPoints + 10; // 10 points per completed habit
+        const newPoints = (user.totalPoints || 0) + 10; // 10 points per completed habit
         // Calculate streak would require more complex logic
-        await storage.updateUserStats(userId, newPoints, user.currentStreak, user.longestStreak);
+        await storage.updateUserStats(userId, newPoints, user.currentStreak || 0, user.longestStreak || 0);
       }
-      
+
       res.json(log);
     } catch (error) {
       console.error("Error logging habit:", error);
@@ -119,7 +125,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/habit-logs/today', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const today = new Date().toISOString().split('T')[0];
       const logs = await storage.getUserHabitLogs(userId, today);
       res.json(logs);
@@ -131,7 +137,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/habit-logs/contribution', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { startDate, endDate } = req.query;
       const logs = await storage.getHabitLogsForContribution(
         userId,
@@ -148,19 +154,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Pomodoro routes
   app.post('/api/pomodoro', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const sessionData = insertPomodoroSessionSchema.parse(req.body);
       const session = await storage.createPomodoroSession(sessionData, userId);
-      
+
       // Award points for completed sessions
       if (session.completed) {
         const user = await storage.getUser(userId);
         if (user) {
           const points = session.duration === 25 ? 25 : 10; // 25 points for focus, 10 for breaks
-          await storage.updateUserStats(userId, user.totalPoints + points, user.currentStreak, user.longestStreak);
+          await storage.updateUserStats(userId, (user.totalPoints || 0) + points, user.currentStreak || 0, user.longestStreak || 0);
         }
       }
-      
+
       res.json(session);
     } catch (error) {
       console.error("Error creating pomodoro session:", error);
@@ -170,7 +176,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/pomodoro/today', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const today = new Date().toISOString().split('T')[0];
       const sessions = await storage.getUserPomodoroSessions(userId, today);
       res.json(sessions);
@@ -193,7 +199,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/user-achievements', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const userAchievements = await storage.getUserAchievements(userId);
       res.json(userAchievements);
     } catch (error) {
@@ -205,20 +211,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AI Insights routes
   app.post('/api/insights/generate', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { weekStart } = req.body;
-      
+
       // Check if insights already exist for this week
       const existingInsights = await storage.getWeeklyInsight(userId, weekStart);
       if (existingInsights) {
         return res.json(existingInsights);
       }
-      
+
       // Gather data for insights
       const habits = await storage.getUserHabits(userId);
       const weekEnd = new Date(weekStart);
       weekEnd.setDate(weekEnd.getDate() + 6);
-      
+
       const allLogs = await Promise.all(
         habits.map(async (habit) => {
           const logs = await storage.getHabitLogs(
@@ -229,12 +235,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return logs;
         })
       );
-      
+
       const flatLogs = allLogs.flat();
       const completedLogs = flatLogs.filter(log => log.completed);
       const pomodoroSessions = await storage.getUserPomodoroSessions(userId, weekStart);
       const user = await storage.getUser(userId);
-      
+
       const insightData = {
         habitsCompleted: completedLogs.length,
         totalHabits: habits.length * 7,
@@ -242,10 +248,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         currentStreak: user?.currentStreak || 0,
         pomodoroSessions: pomodoroSessions.filter(s => s.completed).length,
         focusTime: pomodoroSessions.filter(s => s.completed && s.sessionType === 'focus').reduce((sum, s) => sum + s.duration, 0),
-        categoriesActive: [...new Set(habits.map(h => h.category))],
+        categoriesActive: Array.from(new Set(habits.map(h => h.category))),
         missedDays: 7 - new Set(completedLogs.map(log => log.date)).size,
       };
-      
+
       const insights = await generateWeeklyInsights(insightData);
       const savedInsights = await storage.saveWeeklyInsight(
         userId,
@@ -254,7 +260,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         insights.recommendations,
         insights.motivationalTip
       );
-      
+
       res.json(savedInsights);
     } catch (error) {
       console.error("Error generating insights:", error);
@@ -264,7 +270,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/insights/:weekStart', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { weekStart } = req.params;
       const insights = await storage.getWeeklyInsight(userId, weekStart);
       if (!insights) {
@@ -291,11 +297,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Report generation routes
   app.get('/api/reports/weekly/:weekStart', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { weekStart } = req.params;
-      
+
       const pdfBuffer = await generateWeeklyReport(userId, weekStart);
-      
+
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename="weekly-report-${weekStart}.pdf"`);
       res.send(pdfBuffer);

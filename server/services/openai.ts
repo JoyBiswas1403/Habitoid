@@ -1,7 +1,9 @@
 import OpenAI from "openai";
 
 // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = process.env.OPENAI_API_KEY
+  ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+  : null;
 
 export interface WeeklyInsightData {
   habitsCompleted: number;
@@ -42,6 +44,10 @@ export async function generateWeeklyInsights(data: WeeklyInsightData): Promise<G
   `;
 
   try {
+    if (!openai) {
+      throw new Error("OpenAI API key not configured");
+    }
+
     const response = await openai.chat.completions.create({
       model: "gpt-5",
       messages: [
@@ -59,7 +65,7 @@ export async function generateWeeklyInsights(data: WeeklyInsightData): Promise<G
     });
 
     const result = JSON.parse(response.choices[0].message.content || "{}");
-    
+
     return {
       insights: result.insights || "Your habit tracking shows consistent effort. Keep building on your current momentum.",
       recommendations: result.recommendations || "Continue tracking your habits daily and focus on maintaining consistency.",
@@ -67,14 +73,14 @@ export async function generateWeeklyInsights(data: WeeklyInsightData): Promise<G
     };
   } catch (error) {
     console.error("Failed to generate AI insights:", error);
-    
+
     // Fallback insights based on the data
     return {
       insights: `This week you completed ${data.completionRate}% of your habits with a ${data.currentStreak}-day streak. Your ${data.pomodoroSessions} focus sessions show good time management discipline.`,
-      recommendations: data.completionRate < 70 
+      recommendations: data.completionRate < 70
         ? "Consider reducing the number of habits you're tracking to focus on consistency. Start with 2-3 core habits and build from there."
         : "Great consistency! Consider adding a new challenging habit or increasing the difficulty of existing ones.",
-      motivationalTip: data.currentStreak > 7 
+      motivationalTip: data.currentStreak > 7
         ? `Your ${data.currentStreak}-day streak shows real commitment. Each day you continue strengthens the neural pathways that make these habits automatic.`
         : "Building habits takes time and patience. Focus on showing up consistently, even if it's just for a few minutes each day."
     };
