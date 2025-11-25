@@ -17,6 +17,7 @@ import {
   type Achievement,
   type UserAchievement,
   type AIInsight,
+  passwordResetTokens,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gte, lte, desc, sql } from "drizzle-orm";
@@ -55,6 +56,11 @@ export interface IStorage {
   // Leaderboard operations
   getLeaderboard(): Promise<User[]>;
   updateUserStats(userId: string, points: number, currentStreak: number, longestStreak: number): Promise<void>;
+  createPasswordResetToken(userId: string): Promise<string>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  getUserByGoogleId(googleId: string): Promise<User | undefined>;
+  getUserByGithubId(githubId: string): Promise<User | undefined>;
+  getUserByFacebookId(facebookId: string): Promise<User | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -248,6 +254,34 @@ export class DatabaseStorage implements IStorage {
         updatedAt: new Date(),
       })
       .where(eq(users.id, userId));
+  }
+
+  // Password Reset
+  async createPasswordResetToken(userId: string): Promise<string> {
+    const token = crypto.randomUUID();
+    const expiresAt = new Date(Date.now() + 3600000); // 1 hour
+    await db.insert(passwordResetTokens).values({ token, userId, expiresAt });
+    return token;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  async getUserByGoogleId(googleId: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.googleId, googleId));
+    return user;
+  }
+
+  async getUserByGithubId(githubId: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.githubId, githubId));
+    return user;
+  }
+
+  async getUserByFacebookId(facebookId: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.facebookId, facebookId));
+    return user;
   }
 }
 

@@ -7,6 +7,13 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Configure CORS for mobile app access
+import cors from "cors";
+app.use(cors({
+  origin: ["http://localhost", "http://localhost:5000", "http://10.0.2.2:5000"],
+  credentials: true
+}));
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;

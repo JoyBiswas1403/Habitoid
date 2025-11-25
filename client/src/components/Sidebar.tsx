@@ -28,7 +28,7 @@ const navigation = [
 
 export default function Sidebar() {
   const [location] = useLocation();
-  const { user } = useAuth();
+  const { user, logoutMutation } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
   return (
@@ -127,9 +127,10 @@ export default function Sidebar() {
               </button>
 
               <button
-                onClick={() => window.location.href = "/api/logout"}
+                onClick={() => logoutMutation.mutate()}
                 className="w-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive group flex items-center px-4 py-3 text-sm font-semibold rounded-2xl transition-all"
                 data-testid="button-logout"
+                disabled={logoutMutation.isPending}
               >
                 <LogOut className="mr-3 h-5 w-5" />
                 Logout

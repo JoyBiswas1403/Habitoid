@@ -22,8 +22,10 @@ export const sessions = pgTable("session", {
 export const users = pgTable("users", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   username: text("username").unique().notNull(),
-  password: text("password").notNull(),
+  password: text("password"),
   email: text("email").unique(),
+  googleId: text("google_id").unique(),
+  githubId: text("github_id").unique(),
   firstName: text("first_name"),
   lastName: text("last_name"),
   profileImageUrl: text("profile_image_url"),
@@ -33,6 +35,12 @@ export const users = pgTable("users", {
   longestStreak: integer("longest_streak").default(0),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const passwordResetTokens = pgTable("password_reset_tokens", {
+  token: text("token").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  expiresAt: timestamp("expires_at").notNull(),
 });
 
 export const habits = pgTable("habits", {

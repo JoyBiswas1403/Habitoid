@@ -36,7 +36,11 @@ function Router() {
         <Route path="/auth" component={AuthPage} />
         <Route path="/" component={Landing} />
         <Route component={() => {
-          window.location.href = "/auth";
+          const [, setLocation] = useLocation();
+          // Use useEffect to avoid updating state during render
+          import("react").then(({ useEffect }) => {
+            useEffect(() => setLocation("/auth"), [setLocation]);
+          });
           return null;
         }} />
       </Switch>
@@ -59,7 +63,10 @@ function Router() {
               <Route path="/insights" component={Insights} />
               <Route path="/leaderboard" component={Leaderboard} />
               <Route path="/auth" component={() => {
-                window.location.href = "/";
+                const [, setLocation] = useLocation();
+                import("react").then(({ useEffect }) => {
+                  useEffect(() => setLocation("/"), [setLocation]);
+                });
                 return null;
               }} />
               <Route component={NotFound} />

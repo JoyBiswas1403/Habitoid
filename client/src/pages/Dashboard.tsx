@@ -67,7 +67,7 @@ export default function Dashboard() {
           >
             {/* Hero Image with Progress Ring */}
             <div className="absolute inset-0 p-2">
-              <img src="/assets/hero.png" alt="Hero" className="w-full h-full object-contain" />
+              <img src="/assets/dashboard-hero.png" alt="Hero" className="w-full h-full object-contain" />
             </div>
 
             <svg className="w-full h-full transform -rotate-90 absolute inset-0">
@@ -110,7 +110,7 @@ export default function Dashboard() {
             <div className="bg-card rounded-3xl p-5 shadow-soft flex flex-col items-center justify-center text-center h-full relative overflow-hidden">
               <div className="absolute top-0 right-0 w-16 h-16 bg-orange-500/10 rounded-full -mr-8 -mt-8" />
               <div className="w-16 h-16 mb-2">
-                <img src="/assets/fire.png" alt="Streak" className="w-full h-full object-contain drop-shadow-md" />
+                <img src="/assets/streak-fire.png" alt="Streak" className="w-full h-full object-contain drop-shadow-md" />
               </div>
               <div className="text-2xl font-bold text-foreground">{user?.currentStreak || 0}</div>
               <div className="text-xs font-medium text-muted-foreground">Day Streak</div>
@@ -120,8 +120,8 @@ export default function Dashboard() {
           <motion.div variants={listItemVariants} whileHover="hover" whileTap="tap" custom={scaleHoverVariants}>
             <div className="bg-card rounded-3xl p-5 shadow-soft flex flex-col items-center justify-center text-center h-full relative overflow-hidden">
               <div className="absolute top-0 left-0 w-16 h-16 bg-yellow-500/10 rounded-full -ml-8 -mt-8" />
-              <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center mb-3">
-                <Star className="h-5 w-5 text-yellow-500" />
+              <div className="w-16 h-16 mb-2">
+                <img src="/assets/trophy.png" alt="Trophy" className="w-full h-full object-contain drop-shadow-md" />
               </div>
               <div className="text-2xl font-bold text-foreground">{user?.totalPoints || 0}</div>
               <div className="text-xs font-medium text-muted-foreground">Total Points</div>

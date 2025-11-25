@@ -25,7 +25,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const authSchema = z.object({
     username: z.string().min(3, "Username must be at least 3 characters"),
+    email: z.string().email("Invalid email address").optional().or(z.literal("")),
+    firstName: z.string().optional(),
+    lastName: z.string().optional(),
     password: z.string().min(6, "Password must be at least 6 characters"),
+    confirmPassword: z.string().optional(),
+}).refine((data) => {
+    if (data.confirmPassword && data.password !== data.confirmPassword) {
+        return false;
+    }
+    return true;
+}, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
 });
 
 type AuthFormData = z.infer<typeof authSchema>;
@@ -63,8 +75,8 @@ export default function AuthPage() {
                         <button
                             onClick={() => setActiveTab("login")}
                             className={`text-sm font-semibold py-2.5 rounded-full transition-all duration-300 ${activeTab === "login"
-                                    ? "bg-white text-foreground shadow-sm"
-                                    : "text-muted-foreground hover:text-foreground"
+                                ? "bg-white text-foreground shadow-sm"
+                                : "text-muted-foreground hover:text-foreground"
                                 }`}
                         >
                             Login
@@ -72,8 +84,8 @@ export default function AuthPage() {
                         <button
                             onClick={() => setActiveTab("register")}
                             className={`text-sm font-semibold py-2.5 rounded-full transition-all duration-300 ${activeTab === "register"
-                                    ? "bg-white text-foreground shadow-sm"
-                                    : "text-muted-foreground hover:text-foreground"
+                                ? "bg-white text-foreground shadow-sm"
+                                : "text-muted-foreground hover:text-foreground"
                                 }`}
                         >
                             Register
@@ -97,6 +109,35 @@ export default function AuthPage() {
                             isLoading={registerMutation.isPending}
                         />
                     )}
+
+                    <div className="mt-6">
+                        <div className="relative">
+                            <div className="absolute inset-0 flex items-center">
+                                <span className="w-full border-t" />
+                            </div>
+                            <div className="relative flex justify-center text-xs uppercase">
+                                <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4 mt-4">
+                            <Button
+                                variant="outline"
+                                className="rounded-xl h-11"
+                                onClick={() => window.location.href = "/api/auth/google"}
+                            >
+                                Google
+                            </Button>
+                            <Button
+                                variant="outline"
+                                className="rounded-xl h-11"
+                                onClick={() => window.location.href = "/api/auth/github"}
+                            >
+                                GitHub
+                            </Button>
+
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
         </div>
@@ -117,29 +158,81 @@ function AuthForm({
         defaultValues: {
             username: "",
             password: "",
+            email: "",
+            firstName: "",
+            lastName: "",
+            confirmPassword: "",
         },
     });
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                {mode === "register" && (
+                    <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                            control={form.control}
+                            name="firstName"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="pl-1">First Name</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="John" {...field} className="rounded-xl bg-secondary/30 border-transparent focus:bg-background h-11" />
+                                    </FormControl>
+                                    <FormMessage className="pl-1" />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="lastName"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="pl-1">Last Name</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Doe" {...field} className="rounded-xl bg-secondary/30 border-transparent focus:bg-background h-11" />
+                                    </FormControl>
+                                    <FormMessage className="pl-1" />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+                )}
+
                 <FormField
                     control={form.control}
                     name="username"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel className="pl-1">Username</FormLabel>
+                            <FormLabel className="pl-1">{mode === "login" ? "Username or Email" : "Username"}</FormLabel>
                             <FormControl>
                                 <Input
-                                    placeholder="Enter your username"
+                                    placeholder={mode === "login" ? "Enter username or email" : "Choose a username"}
                                     {...field}
-                                    className="rounded-xl bg-secondary/30 border-transparent focus:bg-background focus:border-primary/20 h-12"
+                                    className="rounded-xl bg-secondary/30 border-transparent focus:bg-background h-11"
                                 />
                             </FormControl>
                             <FormMessage className="pl-1" />
                         </FormItem>
                     )}
                 />
+
+                {mode === "register" && (
+                    <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel className="pl-1">Email</FormLabel>
+                                <FormControl>
+                                    <Input type="email" placeholder="john@example.com" {...field} className="rounded-xl bg-secondary/30 border-transparent focus:bg-background h-11" />
+                                </FormControl>
+                                <FormMessage className="pl-1" />
+                            </FormItem>
+                        )}
+                    />
+                )}
+
                 <FormField
                     control={form.control}
                     name="password"
@@ -149,15 +242,45 @@ function AuthForm({
                             <FormControl>
                                 <Input
                                     type="password"
-                                    placeholder="Enter your password"
+                                    placeholder="Enter password"
                                     {...field}
-                                    className="rounded-xl bg-secondary/30 border-transparent focus:bg-background focus:border-primary/20 h-12"
+                                    className="rounded-xl bg-secondary/30 border-transparent focus:bg-background h-11"
                                 />
                             </FormControl>
                             <FormMessage className="pl-1" />
                         </FormItem>
                     )}
                 />
+
+                {mode === "register" && (
+                    <FormField
+                        control={form.control}
+                        name="confirmPassword"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel className="pl-1">Confirm Password</FormLabel>
+                                <FormControl>
+                                    <Input
+                                        type="password"
+                                        placeholder="Confirm password"
+                                        {...field}
+                                        className="rounded-xl bg-secondary/30 border-transparent focus:bg-background h-11"
+                                    />
+                                </FormControl>
+                                <FormMessage className="pl-1" />
+                            </FormItem>
+                        )}
+                    />
+                )}
+
+                {mode === "login" && (
+                    <div className="flex justify-end">
+                        <button type="button" className="text-sm text-primary hover:underline font-medium">
+                            Forgot Password?
+                        </button>
+                    </div>
+                )}
+
                 <Button
                     type="submit"
                     className="w-full h-12 rounded-xl text-base font-bold shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all mt-2"
