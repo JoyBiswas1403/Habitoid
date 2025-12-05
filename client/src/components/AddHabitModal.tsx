@@ -111,7 +111,7 @@ export default function AddHabitModal({ open, onClose }: AddHabitModalProps) {
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent
-        className="sm:max-w-lg p-0 overflow-hidden"
+        className="sm:max-w-lg p-0 max-h-[90vh] overflow-y-auto"
         style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
       >
         {view === 'create' ? (

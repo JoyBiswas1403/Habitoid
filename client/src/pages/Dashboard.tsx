@@ -169,8 +169,13 @@ export default function Dashboard() {
         <div className="lg:col-span-2 space-y-4">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-bold">Today's Habits</h2>
-            <div className="text-sm font-bold" style={{ color: 'var(--muted)' }}>
-              {completedToday}/{todaysHabits.length} Completed
+            <div className="flex items-center gap-4">
+              <a href="#/habits" className="text-sm font-bold underline" style={{ color: 'var(--primary)' }}>
+                View All ({(habits as any[]).length})
+              </a>
+              <div className="text-sm font-bold" style={{ color: 'var(--muted)' }}>
+                {completedToday}/{todaysHabits.length} Completed
+              </div>
             </div>
           </div>
 
@@ -180,10 +185,14 @@ export default function Dashboard() {
                 className="text-center py-10 border-2 border-dashed rounded-xl"
                 style={{ color: 'var(--muted)', borderColor: 'var(--border)' }}
               >
-                {(habits as any[]).length === 0
-                  ? "No habits yet. Click 'Add Habit' to start!"
-                  : "No habits scheduled for today. Enjoy your rest! 🎉"
-                }
+                {(habits as any[]).length === 0 ? (
+                  "No habits yet. Click 'Add Habit' to start!"
+                ) : (
+                  <div>
+                    <p>No habits scheduled for today. 🎉</p>
+                    <p className="text-sm mt-2">You have {(habits as any[]).length} habit(s) - <a href="#/habits" className="underline" style={{ color: 'var(--primary)' }}>view all</a></p>
+                  </div>
+                )}
               </div>
             )}
             {todaysHabits.map((habit: any) => {
