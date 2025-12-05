@@ -5,14 +5,6 @@ import { z } from "zod";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import {
     Form,
     FormControl,
     FormField,
@@ -21,7 +13,9 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { HabitoidLogo } from "@/components/HabitoidLogo";
+import { Github } from "lucide-react";
+import { Mail, Lock, ArrowLeft } from "lucide-react";
 
 const authSchema = z.object({
     username: z.string().min(3, "Username must be at least 3 characters"),
@@ -42,114 +36,104 @@ const authSchema = z.object({
 
 type AuthFormData = z.infer<typeof authSchema>;
 
+// Exact AuthPage from app.jsx
 export default function AuthPage() {
     const { loginMutation, registerMutation, user } = useAuth();
     const [, setLocation] = useLocation();
-    const [activeTab, setActiveTab] = useState<"login" | "register">("login");
+    const [isLogin, setIsLogin] = useState(true);
 
     if (user) {
         setLocation("/");
         return null;
     }
 
+    const handleSubmit = (data: AuthFormData) => {
+        if (isLogin) {
+            loginMutation.mutate(data);
+        } else {
+            registerMutation.mutate(data);
+        }
+    };
+
     return (
-        <div className="min-h-screen flex items-center justify-center bg-background p-4 relative overflow-hidden">
-            {/* Background decoration */}
-            <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
-                <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
-                <div className="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-yellow-400/10 rounded-full blur-3xl" />
+        <div className="min-h-screen flex items-center justify-center p-4 animate-in fade-in" style={{ backgroundColor: 'var(--bg)' }}>
+            <div
+                className="w-full max-w-md rounded-3xl shadow-xl p-8 border"
+                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+            >
+                {/* Logo */}
+                <div className="flex justify-center mb-6">
+                    <HabitoidLogo size={60} />
+                </div>
+
+                <h2 className="text-2xl font-black text-center mb-2">
+                    {isLogin ? "Welcome Back!" : "Create Account"}
+                </h2>
+                <p className="text-center mb-8" style={{ color: 'var(--muted)' }}>
+                    {isLogin ? "Ready to crush your goals with Slash?" : "Join thousands building better habits!"}
+                </p>
+
+                <AuthForm
+                    isLogin={isLogin}
+                    onSubmit={handleSubmit}
+                    isLoading={loginMutation.isPending || registerMutation.isPending}
+                />
+
+                {/* Divider */}
+                <div className="my-6 flex items-center gap-2">
+                    <div className="h-[1px] flex-1" style={{ backgroundColor: 'var(--border)' }} />
+                    <span className="text-xs font-bold uppercase" style={{ color: 'var(--muted)' }}>
+                        OR CONTINUE WITH
+                    </span>
+                    <div className="h-[1px] flex-1" style={{ backgroundColor: 'var(--border)' }} />
+                </div>
+
+                {/* OAuth */}
+                <div className="grid grid-cols-2 gap-4">
+                    <button
+                        onClick={() => window.location.href = "/api/auth/github"}
+                        className="flex items-center justify-center gap-2 border-2 py-2 rounded-xl font-bold text-sm transition-colors"
+                        style={{ borderColor: 'var(--border)' }}
+                    >
+                        <Github size={18} /> GitHub
+                    </button>
+                    <button
+                        onClick={() => window.location.href = "/api/auth/google"}
+                        className="flex items-center justify-center gap-2 border-2 py-2 rounded-xl font-bold text-sm transition-colors"
+                        style={{ borderColor: 'var(--border)' }}
+                    >
+                        <span className="text-blue-500 font-serif font-bold">G</span> Google
+                    </button>
+                </div>
+
+                {/* Toggle login/register */}
+                <p
+                    className="text-center mt-6 text-sm cursor-pointer hover:underline"
+                    style={{ color: 'var(--muted)' }}
+                    onClick={() => setIsLogin(!isLogin)}
+                >
+                    {isLogin ? "Don't have an account? Sign up" : "Already have an account? Log in"}
+                </p>
+
+                {/* Back to home */}
+                <p
+                    className="text-center mt-4 text-sm cursor-pointer flex items-center justify-center gap-1"
+                    style={{ color: 'var(--muted)' }}
+                    onClick={() => setLocation("/")}
+                >
+                    <ArrowLeft size={14} /> Back to Home
+                </p>
             </div>
-
-            <Card className="w-full max-w-md relative z-10 shadow-soft rounded-[2.5rem] border-none">
-                <CardHeader className="text-center pt-10 pb-6">
-                    <div className="mx-auto w-16 h-16 bg-gradient-to-br from-orange-400 to-yellow-400 rounded-2xl flex items-center justify-center mb-4 shadow-lg transform rotate-3">
-                        <span className="text-3xl text-white font-bold">H</span>
-                    </div>
-                    <CardTitle className="text-3xl font-bold tracking-tight">HabitFlow</CardTitle>
-                    <CardDescription className="text-base mt-2">
-                        Build better habits, one day at a time
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="px-8 pb-10">
-                    <div className="grid w-full grid-cols-2 mb-8 bg-secondary/50 p-1.5 rounded-full">
-                        <button
-                            onClick={() => setActiveTab("login")}
-                            className={`text-sm font-semibold py-2.5 rounded-full transition-all duration-300 ${activeTab === "login"
-                                ? "bg-white text-foreground shadow-sm"
-                                : "text-muted-foreground hover:text-foreground"
-                                }`}
-                        >
-                            Login
-                        </button>
-                        <button
-                            onClick={() => setActiveTab("register")}
-                            className={`text-sm font-semibold py-2.5 rounded-full transition-all duration-300 ${activeTab === "register"
-                                ? "bg-white text-foreground shadow-sm"
-                                : "text-muted-foreground hover:text-foreground"
-                                }`}
-                        >
-                            Register
-                        </button>
-                    </div>
-
-                    {activeTab === "login" && (
-                        <AuthForm
-                            key="login-form"
-                            mode="login"
-                            onSubmit={(data) => loginMutation.mutate(data)}
-                            isLoading={loginMutation.isPending}
-                        />
-                    )}
-
-                    {activeTab === "register" && (
-                        <AuthForm
-                            key="register-form"
-                            mode="register"
-                            onSubmit={(data) => registerMutation.mutate(data)}
-                            isLoading={registerMutation.isPending}
-                        />
-                    )}
-
-                    <div className="mt-6">
-                        <div className="relative">
-                            <div className="absolute inset-0 flex items-center">
-                                <span className="w-full border-t" />
-                            </div>
-                            <div className="relative flex justify-center text-xs uppercase">
-                                <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4 mt-4">
-                            <Button
-                                variant="outline"
-                                className="rounded-xl h-11"
-                                onClick={() => window.location.href = "/api/auth/google"}
-                            >
-                                Google
-                            </Button>
-                            <Button
-                                variant="outline"
-                                className="rounded-xl h-11"
-                                onClick={() => window.location.href = "/api/auth/github"}
-                            >
-                                GitHub
-                            </Button>
-
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
         </div>
     );
 }
 
 function AuthForm({
-    mode,
+    isLogin,
     onSubmit,
     isLoading,
 }: {
-    mode: "login" | "register";
+    isLogin: boolean;
     onSubmit: (data: AuthFormData) => void;
     isLoading: boolean;
 }) {
@@ -168,132 +152,94 @@ function AuthForm({
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                {mode === "register" && (
-                    <div className="grid grid-cols-2 gap-4">
-                        <FormField
-                            control={form.control}
-                            name="firstName"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className="pl-1">First Name</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="John" {...field} className="rounded-xl bg-secondary/30 border-transparent focus:bg-background h-11" />
-                                    </FormControl>
-                                    <FormMessage className="pl-1" />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="lastName"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className="pl-1">Last Name</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="Doe" {...field} className="rounded-xl bg-secondary/30 border-transparent focus:bg-background h-11" />
-                                    </FormControl>
-                                    <FormMessage className="pl-1" />
-                                </FormItem>
-                            )}
-                        />
-                    </div>
-                )}
-
                 <FormField
                     control={form.control}
                     name="username"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel className="pl-1">{mode === "login" ? "Username or Email" : "Username"}</FormLabel>
+                            <FormLabel className="block text-sm font-bold mb-1">
+                                {isLogin ? "Email" : "Username"}
+                            </FormLabel>
                             <FormControl>
-                                <Input
-                                    placeholder={mode === "login" ? "Enter username or email" : "Choose a username"}
-                                    {...field}
-                                    className="rounded-xl bg-secondary/30 border-transparent focus:bg-background h-11"
-                                />
+                                <div className="relative">
+                                    <Mail
+                                        className="absolute left-3 top-3"
+                                        size={18}
+                                        style={{ color: 'var(--muted)' }}
+                                    />
+                                    <input
+                                        placeholder={isLogin ? "george@habitoid.com" : "Choose a username"}
+                                        {...field}
+                                        className="w-full pl-10 pr-4 py-2 border-2 rounded-xl focus:outline-none transition-colors"
+                                        style={{
+                                            borderColor: 'var(--border)',
+                                            backgroundColor: 'var(--bg)',
+                                            color: 'var(--text)'
+                                        }}
+                                        onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary)'}
+                                        onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border)'}
+                                    />
+                                </div>
                             </FormControl>
-                            <FormMessage className="pl-1" />
+                            <FormMessage />
                         </FormItem>
                     )}
                 />
-
-                {mode === "register" && (
-                    <FormField
-                        control={form.control}
-                        name="email"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel className="pl-1">Email</FormLabel>
-                                <FormControl>
-                                    <Input type="email" placeholder="john@example.com" {...field} className="rounded-xl bg-secondary/30 border-transparent focus:bg-background h-11" />
-                                </FormControl>
-                                <FormMessage className="pl-1" />
-                            </FormItem>
-                        )}
-                    />
-                )}
 
                 <FormField
                     control={form.control}
                     name="password"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel className="pl-1">Password</FormLabel>
+                            <FormLabel className="block text-sm font-bold mb-1">Password</FormLabel>
                             <FormControl>
-                                <Input
-                                    type="password"
-                                    placeholder="Enter password"
-                                    {...field}
-                                    className="rounded-xl bg-secondary/30 border-transparent focus:bg-background h-11"
-                                />
+                                <div className="relative">
+                                    <Lock
+                                        className="absolute left-3 top-3"
+                                        size={18}
+                                        style={{ color: 'var(--muted)' }}
+                                    />
+                                    <input
+                                        type="password"
+                                        placeholder="••••••••"
+                                        {...field}
+                                        className="w-full pl-10 pr-4 py-2 border-2 rounded-xl focus:outline-none transition-colors"
+                                        style={{
+                                            borderColor: 'var(--border)',
+                                            backgroundColor: 'var(--bg)',
+                                            color: 'var(--text)'
+                                        }}
+                                        onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary)'}
+                                        onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border)'}
+                                    />
+                                </div>
                             </FormControl>
-                            <FormMessage className="pl-1" />
+                            <FormMessage />
                         </FormItem>
                     )}
                 />
 
-                {mode === "register" && (
-                    <FormField
-                        control={form.control}
-                        name="confirmPassword"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel className="pl-1">Confirm Password</FormLabel>
-                                <FormControl>
-                                    <Input
-                                        type="password"
-                                        placeholder="Confirm password"
-                                        {...field}
-                                        className="rounded-xl bg-secondary/30 border-transparent focus:bg-background h-11"
-                                    />
-                                </FormControl>
-                                <FormMessage className="pl-1" />
-                            </FormItem>
-                        )}
-                    />
-                )}
-
-                {mode === "login" && (
+                {isLogin && (
                     <div className="flex justify-end">
-                        <button type="button" className="text-sm text-primary hover:underline font-medium">
+                        <button
+                            type="button"
+                            onClick={() => window.location.href = "/#/forgot-password"}
+                            className="text-sm font-medium"
+                            style={{ color: 'var(--primary)' }}
+                        >
                             Forgot Password?
                         </button>
                     </div>
                 )}
 
-                <Button
+                <button
                     type="submit"
-                    className="w-full h-12 rounded-xl text-base font-bold shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all mt-2"
+                    className="w-full py-3 text-lg rounded-lg font-bold transition-all active:scale-95 mt-4"
+                    style={{ backgroundColor: 'var(--sidebar)', color: 'var(--bg)' }}
                     disabled={isLoading}
                 >
-                    {isLoading
-                        ? mode === "login"
-                            ? "Signing in..."
-                            : "Creating account..."
-                        : mode === "login"
-                            ? "Sign In"
-                            : "Create Account"}
-                </Button>
+                    {isLoading ? "Loading..." : "Log In"}
+                </button>
             </form>
         </Form>
     );

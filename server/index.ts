@@ -1,3 +1,10 @@
+/**
+ * Habitoid - Build Better Habits
+ * Copyright (c) 2025 Habitoid Team
+ * Owner: Joy Biswas (bjoy1403@gmail.com)
+ * Licensed under the MIT License
+ */
+
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupAuth } from "./auth";

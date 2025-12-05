@@ -1,10 +1,10 @@
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Check, Flame, Edit, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { Check, Flame, Trash2, MessageSquare } from "lucide-react";
 import { motion } from "framer-motion";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { HABIT_CATEGORIES } from "@/lib/habitData";
 
 interface HabitCardProps {
   habit: {
@@ -12,14 +12,34 @@ interface HabitCardProps {
     name: string;
     description?: string;
     category: string;
+    color?: string;
+    icon?: string;
+    frequency?: string;
   };
   isCompleted: boolean;
-  streak: number;
+  streak?: number;
 }
 
-export default function HabitCard({ habit, isCompleted, streak }: HabitCardProps) {
+// Frequency labels
+const frequencyLabels: Record<string, string> = {
+  daily: 'Daily',
+  weekdays: 'Weekdays',
+  weekends: 'Weekends',
+  weekly: 'Weekly',
+  '3x_week': '3x/week',
+  custom: 'Custom',
+};
+
+export default function HabitCard({ habit, isCompleted, streak = 0 }: HabitCardProps) {
+  const [showNoteInput, setShowNoteInput] = useState(false);
+  const [note, setNote] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Get category info
+  const category = HABIT_CATEGORIES.find(c => c.id === habit.category) || HABIT_CATEGORIES[7]; // Default to 'other'
+  const habitColor = habit.color || category.color;
+  const habitIcon = habit.icon || category.icon;
 
   const toggleHabitMutation = useMutation({
     mutationFn: async () => {
@@ -27,17 +47,22 @@ export default function HabitCard({ habit, isCompleted, streak }: HabitCardProps
         date: new Date().toISOString().split('T')[0],
         completed: !isCompleted,
         value: 1,
+        notes: note || undefined,
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/habit-logs/today"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/habits"] });
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/habit-logs/contribution"] });
       toast({
-        title: isCompleted ? "Habit unchecked" : "Habit completed!",
+        title: isCompleted ? "Habit unchecked" : "Habit completed! ⚡",
         description: isCompleted
           ? `Removed completion for ${habit.name}`
           : `Great job! You earned 10 points for completing ${habit.name}`,
       });
+      setNote("");
+      setShowNoteInput(false);
     },
   });
 
@@ -49,77 +74,143 @@ export default function HabitCard({ habit, isCompleted, streak }: HabitCardProps
       queryClient.invalidateQueries({ queryKey: ["/api/habits"] });
       toast({
         title: "Habit deleted",
-        description: `${habit.name} has been removed from your habits`,
+        description: `${habit.name} has been removed`,
       });
     },
   });
 
-  const getStreakColor = (streak: number) => {
-    if (streak >= 21) return "bg-success text-white";
-    if (streak >= 7) return "bg-warning text-white";
-    if (streak >= 3) return "bg-chart-3 text-white";
-    return "bg-secondary text-muted-foreground";
-  };
-
-  // Icon mapping based on category (simplified)
-  const getIcon = () => {
-    // In a real app, this would be dynamic or passed as a prop
-    return <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-500">
-      <div className="w-2 h-2 bg-current rounded-full" />
-    </div>;
+  const handleComplete = () => {
+    if (!isCompleted && !showNoteInput) {
+      // Show note input option on first click
+      toggleHabitMutation.mutate();
+    } else {
+      toggleHabitMutation.mutate();
+    }
   };
 
   return (
-    <div className="group flex items-center justify-between p-4 bg-card rounded-3xl shadow-card hover:shadow-soft transition-all duration-300 border border-transparent hover:border-primary/10">
-      <div className="flex items-center space-x-4">
-        <div className="flex-shrink-0">
-          {/* Placeholder for category icon */}
-          <div className="w-12 h-12 rounded-2xl bg-secondary/50 flex items-center justify-center text-primary">
-            <span className="text-xl">💧</span>
-          </div>
+    <div
+      className="group flex items-center justify-between p-4 rounded-2xl transition-all border"
+      style={{
+        backgroundColor: 'var(--card)',
+        borderColor: isCompleted ? habitColor : 'var(--border)',
+        borderLeftWidth: '4px',
+        borderLeftColor: habitColor,
+      }}
+    >
+      <div className="flex items-center gap-4">
+        {/* Category Icon */}
+        <div
+          className="w-12 h-12 rounded-xl flex items-center justify-center text-xl"
+          style={{ backgroundColor: `${habitColor}20` }}
+        >
+          {habitIcon}
         </div>
+
+        {/* Habit Info */}
         <div>
-          <h4 className="font-bold text-foreground text-lg">{habit.name}</h4>
-          <div className="flex items-center space-x-2 mt-1">
-            <span className="text-xs font-medium text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
-              {habit.category}
+          <h4
+            className="font-bold text-lg"
+            style={{
+              textDecoration: isCompleted ? 'line-through' : 'none',
+              opacity: isCompleted ? 0.6 : 1
+            }}
+          >
+            {habit.name}
+          </h4>
+          <div className="flex items-center gap-2 mt-1">
+            {/* Category Badge */}
+            <span
+              className="text-xs px-2 py-0.5 rounded-full font-medium"
+              style={{
+                backgroundColor: `${habitColor}20`,
+                color: habitColor
+              }}
+            >
+              {category.label.split(' ')[0]}
             </span>
-            <span className="text-xs text-muted-foreground">• Daily</span>
+
+            {/* Frequency Badge */}
+            <span
+              className="text-xs font-medium"
+              style={{ color: 'var(--muted)' }}
+            >
+              • {frequencyLabels[habit.frequency || 'daily']}
+            </span>
           </div>
         </div>
       </div>
 
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center gap-3">
+        {/* Streak */}
         {streak > 0 && (
-          <div className="hidden sm:flex items-center space-x-1 text-orange-500 font-bold text-sm">
-            <Flame className="h-4 w-4 fill-current" />
+          <div
+            className="hidden sm:flex items-center gap-1 font-bold text-sm"
+            style={{ color: '#f97316' }}
+          >
+            <Flame size={16} className="fill-current" />
             <span>{streak}</span>
           </div>
         )}
 
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
-            onClick={() => deleteHabitMutation.mutate()}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+        {/* Note Button */}
+        <button
+          onClick={() => setShowNoteInput(!showNoteInput)}
+          className="p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
+          style={{ color: 'var(--muted)' }}
+          title="Add note"
+        >
+          <MessageSquare size={16} />
+        </button>
 
-          <motion.button
-            onClick={() => toggleHabitMutation.mutate()}
-            disabled={toggleHabitMutation.isPending}
-            whileTap={{ scale: 0.9 }}
-            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${isCompleted
-              ? "bg-success text-white shadow-lg scale-110"
-              : "bg-secondary text-muted-foreground hover:bg-primary/20 hover:text-primary"
-              }`}
-          >
-            {isCompleted ? <Check className="h-6 w-6" /> : <div className="w-4 h-4 rounded-full border-2 border-current" />}
-          </motion.button>
-        </div>
+        {/* Delete Button */}
+        <button
+          onClick={() => deleteHabitMutation.mutate()}
+          className="p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all hover:text-red-500"
+          style={{ color: 'var(--muted)' }}
+        >
+          <Trash2 size={16} />
+        </button>
+
+        {/* Complete Button */}
+        <motion.button
+          onClick={handleComplete}
+          disabled={toggleHabitMutation.isPending}
+          whileTap={{ scale: 0.9 }}
+          className="w-10 h-10 rounded-full flex items-center justify-center transition-all"
+          style={{
+            backgroundColor: isCompleted ? habitColor : 'var(--accent-light)',
+            color: isCompleted ? 'white' : 'var(--muted)'
+          }}
+        >
+          {isCompleted ? (
+            <Check size={20} />
+          ) : (
+            <div
+              className="w-5 h-5 rounded-full border-2"
+              style={{ borderColor: 'currentColor' }}
+            />
+          )}
+        </motion.button>
       </div>
+
+      {/* Note Input (hidden by default) */}
+      {showNoteInput && !isCompleted && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          className="absolute bottom-0 left-0 right-0 p-4 bg-accent-light rounded-b-2xl"
+        >
+          <input
+            type="text"
+            placeholder="Add a note (optional)..."
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            className="w-full px-3 py-2 rounded-lg text-sm border"
+            style={{ borderColor: 'var(--border)', backgroundColor: 'var(--card)' }}
+          />
+        </motion.div>
+      )}
     </div>
   );
 }

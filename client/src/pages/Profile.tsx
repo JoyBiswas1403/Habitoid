@@ -2,11 +2,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogOut, User, Mail, Calendar } from "lucide-react";
+import { LogOut, User, Mail, Calendar, Bell } from "lucide-react";
 import { motion } from "framer-motion";
+import NotificationSettings from "@/components/NotificationSettings";
 
 export default function Profile() {
-    const { user, logoutMutation } = useAuth();
+    const { user: rawUser, logoutMutation } = useAuth();
+    const user = rawUser as any;
 
     if (!user) return null;
 
@@ -68,6 +70,14 @@ export default function Profile() {
                                         <p className="font-medium">{new Date(user.createdAt).toLocaleDateString()}</p>
                                     </div>
                                 </div>
+                            </div>
+
+                            <div className="pt-6 border-t">
+                                <h3 className="font-bold mb-4 flex items-center gap-2">
+                                    <Bell className="h-5 w-5 text-primary" />
+                                    Notifications
+                                </h3>
+                                <NotificationSettings />
                             </div>
 
                             <div className="pt-6 border-t">

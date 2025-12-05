@@ -1,90 +1,116 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================
+   HABITOID ULTIMATE - Exact Theme from app.jsx
+   ============================================ */
+
 :root {
-  --radius: 1.5rem; /* Increased radius for softer look */
-  
-  /* Light mode - Soft UI / Neumorphic Palette */
-  --background: hsl(210, 20%, 98%); /* Very light grey/blue background */
-  --foreground: hsl(220, 15%, 20%); /* Dark grey text */
-  
-  --card: hsl(0, 0%, 100%);
-  --card-foreground: hsl(220, 15%, 20%);
-  
-  --popover: hsl(0, 0%, 100%);
-  --popover-foreground: hsl(220, 15%, 20%);
-  
-  /* Primary Accent - Orange/Yellow Gradient feel */
-  --primary: hsl(35, 100%, 55%); /* Vibrant Orange */
-  --primary-foreground: hsl(0, 0%, 100%);
-  
-  --secondary: hsl(210, 20%, 94%); /* Soft grey for secondary elements */
-  --secondary-foreground: hsl(220, 15%, 20%);
-  
-  --muted: hsl(210, 20%, 94%);
-  --muted-foreground: hsl(220, 10%, 60%);
-  
-  --accent: hsl(35, 100%, 96%); /* Very light orange for backgrounds */
-  --accent-foreground: hsl(35, 100%, 45%);
-  
-  --destructive: hsl(0, 84%, 60%);
-  --destructive-foreground: hsl(0, 0%, 100%);
-  
-  --border: hsl(220, 10%, 90%);
-  --input: hsl(220, 10%, 90%);
-  --ring: hsl(35, 100%, 55%);
-  
-  /* Chart Colors */
-  --success: hsl(150, 80%, 40%);
-  --warning: hsl(35, 100%, 55%);
-  --chart-1: hsl(35, 100%, 55%);
-  --chart-2: hsl(200, 90%, 60%);
-  --chart-3: hsl(150, 80%, 40%);
-  --chart-4: hsl(280, 70%, 60%);
-  --chart-5: hsl(340, 80%, 60%);
-  
-  --font-sans: 'Inter', sans-serif;
+  --bg: #F8FAED;
+  --card: #ffffff;
+  --text: #232323;
+  --sidebar: #232323;
+  --primary: #50A65C;
+  --border: #e5e7eb;
+  --muted: #9ca3af;
+  --accent-light: #EAF4E4;
+
+  /* Tailwind CSS variable mappings */
+  --background: 72 47% 95%;
+  --foreground: 0 0% 14%;
+  --card-bg: 0 0% 100%;
+  --card-foreground: 0 0% 14%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 14%;
+  --primary-hsl: 130 36% 48%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 72 30% 92%;
+  --secondary-foreground: 0 0% 14%;
+  --muted-bg: 72 20% 90%;
+  --muted-foreground: 0 0% 43%;
+  --accent: 130 36% 93%;
+  --accent-foreground: 130 36% 48%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border-color: 220 13% 91%;
+  --input: 220 13% 91%;
+  --ring: 130 36% 48%;
+  --radius: 1rem;
 }
 
 .dark {
-  /* Dark mode adaptation - Deep Blue/Grey */
-  --background: hsl(220, 20%, 10%);
-  --foreground: hsl(210, 20%, 98%);
-  
-  --card: hsl(220, 20%, 14%);
-  --card-foreground: hsl(210, 20%, 98%);
-  
-  --popover: hsl(220, 20%, 14%);
-  --popover-foreground: hsl(210, 20%, 98%);
-  
-  --primary: hsl(35, 100%, 55%);
-  --primary-foreground: hsl(0, 0%, 100%);
-  
-  --secondary: hsl(220, 20%, 20%);
-  --secondary-foreground: hsl(210, 20%, 98%);
-  
-  --muted: hsl(220, 20%, 20%);
-  --muted-foreground: hsl(220, 10%, 70%);
-  
-  --accent: hsl(35, 100%, 15%);
-  --accent-foreground: hsl(35, 100%, 60%);
-  
-  --destructive: hsl(0, 62%, 30%);
-  --destructive-foreground: hsl(210, 20%, 98%);
-  
-  --border: hsl(220, 20%, 20%);
-  --input: hsl(220, 20%, 20%);
-  --ring: hsl(35, 100%, 55%);
-  
-  --success: hsl(150, 70%, 45%);
-  --warning: hsl(35, 100%, 55%);
-  --chart-1: hsl(35, 100%, 55%);
-  --chart-2: hsl(200, 90%, 60%);
-  --chart-3: hsl(150, 70%, 45%);
-  --chart-4: hsl(280, 70%, 60%);
-  --chart-5: hsl(340, 80%, 60%);
+  --bg: #121212;
+  --card: #1e1e1e;
+  --text: #F8FAED;
+  --sidebar: #000000;
+  --primary: #50A65C;
+  --border: #333333;
+  --muted: #6b7280;
+  --accent-light: #1a2e1e;
+
+  --background: 0 0% 7%;
+  --foreground: 72 47% 95%;
+  --card-bg: 0 0% 12%;
+  --card-foreground: 72 47% 95%;
+  --popover: 0 0% 12%;
+  --popover-foreground: 72 47% 95%;
+  --secondary: 0 0% 16%;
+  --secondary-foreground: 72 47% 95%;
+  --muted-bg: 0 0% 16%;
+  --muted-foreground: 0 0% 55%;
+  --accent: 130 40% 12%;
+  --accent-foreground: 130 36% 60%;
+  --destructive: 0 62% 30%;
+  --destructive-foreground: 72 47% 95%;
+  --border-color: 0 0% 20%;
+  --input: 0 0% 20%;
+}
+
+/* Direct color classes matching app.jsx exactly */
+.bg-bg {
+  background-color: var(--bg);
+}
+
+.bg-card {
+  background-color: var(--card);
+}
+
+.bg-sidebar {
+  background-color: var(--sidebar);
+}
+
+.bg-primary {
+  background-color: var(--primary);
+}
+
+.bg-accent-light {
+  background-color: var(--accent-light);
+}
+
+.text-bg {
+  color: var(--bg);
+}
+
+.text-card {
+  color: var(--card);
+}
+
+.text-text {
+  color: var(--text);
+}
+
+.text-primary {
+  color: var(--primary);
+}
+
+.text-muted {
+  color: var(--muted);
+}
+
+.border-border {
+  border-color: var(--border);
 }
 
 @layer base {
@@ -93,29 +119,82 @@
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    transition: background-color 0.3s, color 0.3s;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
-@layer utilities {
-  .shadow-soft {
-    box-shadow: 0 10px 40px -10px rgba(0,0,0,0.08);
+/* Scrollbar hide utility */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Animation utilities */
+.animate-in {
+  animation: animateIn 0.3s ease-out forwards;
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.zoom-in-95 {
+  animation: zoomIn95 0.2s ease-out forwards;
+}
+
+@keyframes animateIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
   }
-  
-  .shadow-card {
-    box-shadow: 0 4px 20px -2px rgba(0,0,0,0.05);
-  }
-  
-  .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-orange-400 to-yellow-400;
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-/* Custom styles for contribution squares */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes zoomIn95 {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Button active state */
+.active-scale:active {
+  transform: scale(0.95);
+}
+
+/* Contribution squares */
 .contribution-square {
   width: 12px;
   height: 12px;
-  border-radius: 4px; /* Slightly more rounded */
+  border-radius: 4px;
   transition: all 0.2s ease;
 }
 
@@ -123,31 +202,132 @@
   transform: scale(1.2);
 }
 
-.level-0 { background-color: var(--secondary); }
-.level-1 { background-color: hsl(35, 100%, 90%); }
-.level-2 { background-color: hsl(35, 100%, 75%); }
-.level-3 { background-color: hsl(35, 100%, 60%); }
-.level-4 { background-color: hsl(35, 100%, 45%); }
+.level-0 {
+  background-color: var(--accent-light);
+}
 
-.dark .level-0 { background-color: var(--secondary); }
-.dark .level-1 { background-color: hsl(35, 100%, 25%); }
-.dark .level-2 { background-color: hsl(35, 100%, 35%); }
-.dark .level-3 { background-color: hsl(35, 100%, 45%); }
-.dark .level-4 { background-color: hsl(35, 100%, 55%); }
+.level-1 {
+  background-color: hsl(130 36% 80%);
+}
 
+.level-2 {
+  background-color: hsl(130 36% 65%);
+}
+
+.level-3 {
+  background-color: hsl(130 36% 50%);
+}
+
+.level-4 {
+  background-color: var(--primary);
+}
+
+.dark .level-0 {
+  background-color: var(--accent-light);
+}
+
+.dark .level-1 {
+  background-color: hsl(130 36% 20%);
+}
+
+.dark .level-2 {
+  background-color: hsl(130 36% 30%);
+}
+
+.dark .level-3 {
+  background-color: hsl(130 36% 40%);
+}
+
+.dark .level-4 {
+  background-color: var(--primary);
+}
+
+/* Timer display */
 .timer-display {
   font-variant-numeric: tabular-nums;
 }
 
-.badge-glow {
-  box-shadow: 0 0 20px hsl(var(--primary) / 0.3);
-}
+/* Tailwind layer for component classes */
+@layer components {
+  .card-habitoid {
+    background-color: var(--card);
+    border-radius: 1rem;
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+    transition: background-color 0.3s, border-color 0.3s;
+  }
 
-@keyframes pulse-glow {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
-}
+  .btn-habitoid {
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 700;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
 
-.timer-active {
-  animation: pulse-glow 2s ease-in-out infinite;
+  .btn-habitoid:active {
+    transform: scale(0.95);
+  }
+
+  .btn-habitoid:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .btn-primary-habitoid {
+    background-color: var(--sidebar);
+    color: var(--bg);
+  }
+
+  .btn-primary-habitoid:hover {
+    filter: brightness(1.1);
+  }
+
+  .btn-secondary-habitoid {
+    background-color: var(--primary);
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(80, 166, 92, 0.25);
+  }
+
+  .btn-secondary-habitoid:hover {
+    filter: brightness(1.1);
+  }
+
+  .btn-outline-habitoid {
+    border: 2px solid currentColor;
+  }
+
+  .btn-outline-habitoid:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  .dark .btn-outline-habitoid:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .btn-ghost-habitoid {
+    color: var(--muted);
+  }
+
+  .btn-ghost-habitoid:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: var(--primary);
+  }
+
+  .dark .btn-ghost-habitoid:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .btn-danger-habitoid {
+    background-color: #ef4444;
+    color: white;
+  }
+
+  .btn-danger-habitoid:hover {
+    background-color: #dc2626;
+  }
 }

@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.habitflow.app',
-  appName: 'HabitFlow',
+  appId: 'com.habitoid.app',
+  appName: 'Habitoid',
   webDir: 'dist/public',
   server: {
     androidScheme: 'http',

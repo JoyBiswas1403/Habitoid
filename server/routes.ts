@@ -1,7 +1,14 @@
-import type { Express } from "express";
+/**
+ * Habitoid - Build Better Habits
+ * Copyright (c) 2025 Habitoid Team
+ * Owner: Joy Biswas (bjoy1403@gmail.com)
+ * Licensed under the MIT License
+ */
+
+import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertHabitSchema, insertHabitLogSchema, insertPomodoroSessionSchema } from "@shared/schema";
+import { insertHabitSchema, insertHabitLogSchema, insertPomodoroSessionSchema, insertMoodLogSchema } from "@shared/schema";
 import { generateWeeklyInsights } from "./services/openai";
 import { generateWeeklyReport } from "./services/pdf";
 import { z } from "zod";
@@ -92,15 +99,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const logData = insertHabitLogSchema.parse({ ...req.body, habitId });
       const log = await storage.logHabit(logData, userId);
 
-      // Update user stats after logging
+      // Update user stats after logging with XP multiplier
       const user = await storage.getUser(userId);
+      let xpEarned = 0;
       if (user && log.completed) {
-        const newPoints = (user.totalPoints || 0) + 10; // 10 points per completed habit
-        // Calculate streak would require more complex logic
+        const streak = user.currentStreak || 0;
+        // XP Multiplier based on streak
+        let multiplier = 1.0;
+        if (streak >= 30) multiplier = 2.0;
+        else if (streak >= 14) multiplier = 1.75;
+        else if (streak >= 7) multiplier = 1.5;
+        else if (streak >= 3) multiplier = 1.25;
+
+        xpEarned = Math.round(10 * multiplier); // Base 10 XP * multiplier
+        const newPoints = (user.totalPoints || 0) + xpEarned;
         await storage.updateUserStats(userId, newPoints, user.currentStreak || 0, user.longestStreak || 0);
       }
 
-      res.json(log);
+      // Return log with XP earned for toast display
+      res.json({ ...log, xpEarned, multiplier: xpEarned > 10 ? xpEarned / 10 : 1 });
     } catch (error) {
       console.error("Error logging habit:", error);
       res.status(400).json({ message: "Failed to log habit" });
@@ -215,10 +232,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { weekStart } = req.body;
 
       // Check if insights already exist for this week
-      const existingInsights = await storage.getWeeklyInsight(userId, weekStart);
-      if (existingInsights) {
-        return res.json(existingInsights);
-      }
+      // We now allow regeneration, so we don't return early.
+      // const existingInsights = await storage.getWeeklyInsight(userId, weekStart);
+      // if (existingInsights) {
+      //   return res.json(existingInsights);
+      // }
 
       // Gather data for insights
       const habits = await storage.getUserHabits(userId);
@@ -274,7 +292,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { weekStart } = req.params;
       const insights = await storage.getWeeklyInsight(userId, weekStart);
       if (!insights) {
-        return res.status(404).json({ message: "Insights not found for this week" });
+        return res.json(null);
       }
       res.json(insights);
     } catch (error) {
@@ -291,6 +309,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching leaderboard:", error);
       res.status(500).json({ message: "Failed to fetch leaderboard" });
+    }
+  });
+
+  // Mood tracking routes
+  app.post('/api/mood', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const validatedData = insertMoodLogSchema.parse(req.body);
+      const moodLog = await storage.logMood(validatedData, userId);
+      res.json(moodLog);
+    } catch (error) {
+      console.error("Error logging mood:", error);
+      res.status(500).json({ message: "Failed to log mood" });
+    }
+  });
+
+  app.get('/api/mood/today', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const today = new Date().toISOString().split('T')[0];
+      const mood = await storage.getTodayMood(userId, today);
+      res.json(mood || null);
+    } catch (error) {
+      console.error("Error fetching today's mood:", error);
+      res.status(500).json({ message: "Failed to fetch today's mood" });
     }
   });
 
@@ -311,6 +354,113 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Friend routes
+  app.get('/api/friends', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const friends = await storage.getFriends(userId);
+      res.json(friends);
+    } catch (error) {
+      console.error("Error fetching friends:", error);
+      res.status(500).json({ message: "Failed to fetch friends" });
+    }
+  });
+
+  app.post('/api/friends/add', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { username } = req.body;
+
+      if (!username) {
+        return res.status(400).json({ message: "Username is required" });
+      }
+
+      const result = await storage.addFriend(userId, username);
+      if (!result.success) {
+        return res.status(400).json({ message: result.message });
+      }
+
+      res.json(result);
+    } catch (error) {
+      console.error("Error adding friend:", error);
+      res.status(500).json({ message: "Failed to add friend" });
+    }
+  });
+
+  app.delete('/api/friends/:friendId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { friendId } = req.params;
+      await storage.removeFriend(userId, friendId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error removing friend:", error);
+      res.status(500).json({ message: "Failed to remove friend" });
+    }
+  });
+
+  app.get('/api/friends/requests', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const requests = await storage.getFriendRequests(userId);
+      res.json(requests);
+    } catch (error) {
+      console.error("Error fetching friend requests:", error);
+      res.status(500).json({ message: "Failed to fetch friend requests" });
+    }
+  });
+
+  app.post('/api/friends/accept/:requestId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { requestId } = req.params;
+      await storage.acceptFriendRequest(userId, requestId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error accepting friend request:", error);
+      res.status(500).json({ message: "Failed to accept friend request" });
+    }
+  });
+
+  app.post('/api/friends/reject/:requestId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { requestId } = req.params;
+      await storage.rejectFriendRequest(userId, requestId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error rejecting friend request:", error);
+      res.status(500).json({ message: "Failed to reject friend request" });
+    }
+  });
+
+  // Activity feed routes
+  app.get('/api/activity', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const activities = await storage.getActivityFeed(userId);
+      res.json(activities);
+    } catch (error) {
+      console.error("Error fetching activity feed:", error);
+      res.status(500).json({ message: "Failed to fetch activity feed" });
+    }
+  });
+
+  app.get('/api/user/:userId', isAuthenticated, async (req: any, res) => {
+    try {
+      const { userId } = req.params;
+      const user = await storage.getPublicProfile(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      res.status(500).json({ message: "Failed to fetch user profile" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
+

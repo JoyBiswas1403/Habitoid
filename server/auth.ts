@@ -26,24 +26,23 @@ async function comparePasswords(supplied: string, stored: string) {
     return timingSafeEqual(hashedBuf, suppliedBuf);
 }
 
-import pgSession from "connect-pg-simple";
-// ... existing imports ...
+import SQLiteStore from "connect-sqlite3";
 
 // ... existing imports ...
 
 export function setupAuth(app: Express) {
-    const PostgresqlStore = pgSession(session);
+    const SQLiteSessionStore = SQLiteStore(session);
     const sessionSettings: session.SessionOptions = {
-        secret: process.env.SESSION_SECRET || "habitflow_secret_key",
+        secret: process.env.SESSION_SECRET || "habitoid_secret_key",
         resave: false,
         saveUninitialized: false,
-        store: new PostgresqlStore({
-            conString: process.env.DATABASE_URL,
-            createTableIfMissing: true,
+        store: new SQLiteSessionStore({
+            db: "sessions.sqlite",
+            dir: ".",
         }),
         cookie: {
             secure: app.get("env") === "production",
-            sameSite: app.get("env") === "production" ? "none" : "lax",
+            sameSite: "lax",
             maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
         },
     };
@@ -132,14 +131,95 @@ export function setupAuth(app: Express) {
 
     // Password Reset Endpoints
     app.post("/api/forgot-password", async (req, res) => {
-        const { email } = req.body;
-        const user = await storage.getUserByEmail(email);
-        if (!user) {
-            // Don't reveal if user exists
-            return res.status(200).send("If a user with that email exists, a password reset link has been sent.");
+        try {
+            const { email } = req.body;
+
+            if (!email) {
+                return res.status(400).json({ message: "Email is required" });
+            }
+
+            const user = await storage.getUserByEmail(email);
+
+            // Always return success to prevent email enumeration
+            const successMessage = "If a user with that email exists, a password reset link has been sent.";
+
+            if (!user) {
+                return res.status(200).json({ message: successMessage });
+            }
+
+            // Generate secure reset token
+            const token = randomBytes(32).toString("hex");
+            const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour expiry
+
+            // Save token to database
+            await storage.createPasswordResetToken(user.id, token, expiresAt);
+
+            // Get base URL for reset link
+            const protocol = req.headers["x-forwarded-proto"] || req.protocol;
+            const host = req.headers["x-forwarded-host"] || req.get("host");
+            const baseUrl = `${protocol}://${host}`;
+
+            // Send password reset email
+            const { sendPasswordResetEmail } = await import("./services/email");
+            const result = await sendPasswordResetEmail(email, token, baseUrl);
+
+            if (result.previewUrl) {
+                console.log("Password reset email preview:", result.previewUrl);
+            }
+
+            res.status(200).json({ message: successMessage });
+        } catch (error) {
+            console.error("Forgot password error:", error);
+            res.status(500).json({ message: "Failed to process request" });
         }
-        // TODO: Implement password reset token generation and email sending
-        res.status(200).send("If a user with that email exists, a password reset link has been sent.");
+    });
+
+    app.post("/api/reset-password", async (req, res) => {
+        try {
+            const { token, newPassword } = req.body;
+
+            if (!token || !newPassword) {
+                return res.status(400).json({ message: "Token and new password are required" });
+            }
+
+            if (newPassword.length < 6) {
+                return res.status(400).json({ message: "Password must be at least 6 characters" });
+            }
+
+            // Validate token
+            const resetToken = await storage.getPasswordResetToken(token);
+
+            if (!resetToken) {
+                return res.status(400).json({ message: "Invalid or expired reset token" });
+            }
+
+            if (new Date(resetToken.expiresAt) < new Date()) {
+                await storage.deletePasswordResetToken(token);
+                return res.status(400).json({ message: "Reset token has expired" });
+            }
+
+            // Hash new password
+            const hashedPassword = await hashPassword(newPassword);
+
+            // Update user's password
+            const user = await storage.getUser(resetToken.userId);
+            if (!user) {
+                return res.status(400).json({ message: "User not found" });
+            }
+
+            await storage.upsertUser({
+                ...user,
+                password: hashedPassword,
+            });
+
+            // Delete used token
+            await storage.deletePasswordResetToken(token);
+
+            res.status(200).json({ message: "Password has been reset successfully" });
+        } catch (error) {
+            console.error("Reset password error:", error);
+            res.status(500).json({ message: "Failed to reset password" });
+        }
     });
 
     // Google OAuth
